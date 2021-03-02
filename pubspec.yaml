@@ -1,0 +1,14 @@
+name: investing_organizer
+description: Backend for Investing Organizer App
+version: 0.1.0
+
+publish_to: none
+
+environment:
+  sdk: ">=2.8.1 <3.0.0"
+
+#dependencies:
+#  path: ^1.7.0
+
+dev_dependencies:
+  innim_lint: ^0.1.0
