@@ -11,7 +11,10 @@ abstract class WarrenCommand extends Command<int> {
     allowTrailingOptions: false,
   )..addFlag('verbose', help: 'Show additional diagnostic info');
 
-  WarrenCommand(this._name, this._description);
+  WarrenCommand(this._name, this._description,
+      {List<WarrenCommand>? subcommands}) {
+    subcommands?.forEach(addSubcommand);
+  }
 
   @override
   String get name => _name;
