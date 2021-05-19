@@ -15,9 +15,12 @@ class Tinkoff {
   Future<File> export(String path) async {
     String? accountId;
 
-    final portfolio = (await _require(_api.portfolio.load(accountId))).payload;
+    final portfolioApi = _api.portfolio;
+    final marketApi = _api.market;
+
+    final portfolio = (await portfolioApi.load(accountId).require()).payload;
     final currencies =
-        (await _require(_api.portfolio.currencies(accountId))).payload;
+        (await portfolioApi.currencies(accountId).require()).payload;
 
     const colSep = '\t';
     const rowSep = '\n';
@@ -30,11 +33,30 @@ class Tinkoff {
       ..write(colSep)
       ..write('Type')
       ..write(colSep)
-      ..write('Lots')
+      ..write('Count')
+      ..write(colSep)
+      ..write('Price')
+      ..write(colSep)
+      ..write('Amount')
       ..write(rowSep);
+
+    // TODO: accept date as an arg
+    final now = DateTime.now();
+    final startDay = DateTime(now.year, now.month, now.day);
+    final endDay = DateTime(now.year, now.month, now.day + 1);
 
     for (final position in portfolio.positions) {
       if (position.instrumentType == InstrumentType.currency) continue;
+
+      final candles = (await marketApi
+              .candles(position.figi, startDay, endDay, CandleResolution.day)
+              .require())
+          .payload;
+
+      final price = candles.candles.first.c;
+      final amount = price * position.balance;
+
+      // TODO: currency
 
       sb
         ..write(position.ticker)
@@ -43,7 +65,11 @@ class Tinkoff {
         ..write(colSep)
         ..write(position.instrumentType.name)
         ..write(colSep)
-        ..write(position.lots)
+        ..write(position.balance.toInt())
+        ..write(colSep)
+        ..write(price)
+        ..write(colSep)
+        ..write(amount)
         ..write(rowSep);
     }
 
@@ -51,9 +77,13 @@ class Tinkoff {
       sb
         ..write('')
         ..write(colSep)
-        ..write(currency.currency)
+        ..write(currency.currency.name)
         ..write(colSep)
         ..write(InstrumentType.currency.name)
+        ..write(colSep)
+        ..write(currency.balance)
+        ..write(colSep)
+        ..write(1)
         ..write(colSep)
         ..write(currency.balance)
         ..write(rowSep);
@@ -63,9 +93,11 @@ class Tinkoff {
     await file.writeAsString(sb.toString());
     return file;
   }
+}
 
-  Future<T> _require<T>(Future<Result<T>> future) async {
-    final res = await future;
+extension _ResultExtension<T> on Future<Result<T>> {
+  Future<T> require() async {
+    final res = await this;
     if (res.isError) {
       final err = res.asError!.error;
       if (err is ErrorResponse) {
