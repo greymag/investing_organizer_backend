@@ -13,12 +13,29 @@ class Tinkoff {
   }
 
   Future<File> export(String path) async {
-    final portfolio = (await _require(_api.portfolio.load())).payload;
+    String? accountId;
+
+    final portfolio = (await _require(_api.portfolio.load(accountId))).payload;
+    final currencies =
+        (await _require(_api.portfolio.currencies(accountId))).payload;
 
     const colSep = '\t';
     const rowSep = '\n';
     final sb = StringBuffer();
+
+    sb
+      ..write('Ticker')
+      ..write(colSep)
+      ..write('Name')
+      ..write(colSep)
+      ..write('Type')
+      ..write(colSep)
+      ..write('Lots')
+      ..write(rowSep);
+
     for (final position in portfolio.positions) {
+      if (position.instrumentType == InstrumentType.currency) continue;
+
       sb
         ..write(position.ticker)
         ..write(colSep)
@@ -27,6 +44,18 @@ class Tinkoff {
         ..write(position.instrumentType.name)
         ..write(colSep)
         ..write(position.lots)
+        ..write(rowSep);
+    }
+
+    for (final currency in currencies.currencies) {
+      sb
+        ..write('')
+        ..write(colSep)
+        ..write(currency.currency)
+        ..write(colSep)
+        ..write(InstrumentType.currency.name)
+        ..write(colSep)
+        ..write(currency.balance)
         ..write(rowSep);
     }
 
