@@ -1,5 +1,7 @@
 import 'dart:io';
+
 import 'package:async/async.dart';
+import 'package:excel/excel.dart';
 import 'package:tinkoff_invest/tinkoff_invest.dart';
 
 class Tinkoff {
@@ -82,49 +84,43 @@ class Tinkoff {
       data4Export.add(_ExportDataSet(currency: key, items: items));
     });
 
-    return _export2Txt(path, data4Export);
+    return _export2Excel(path, data4Export);
   }
 
-  Future<File> _export2Txt(String path, List<_ExportDataSet> data) async {
-    const colSep = '\t';
-    const rowSep = '\n';
-    final sb = StringBuffer();
-    sb
-      ..write('Ticker')
-      ..write(colSep)
-      ..write('Name')
-      ..write(colSep)
-      ..write('Type')
-      ..write(colSep)
-      ..write('Count')
-      ..write(colSep)
-      ..write('Price')
-      ..write(colSep)
-      ..write('Amount')
-      ..write(rowSep);
+  Future<File> _export2Excel(String path, List<_ExportDataSet> data) async {
+    final excel = Excel.createExcel();
 
     for (final dataSet in data) {
-      sb..write(rowSep)..write(dataSet.currency.name)..write(rowSep);
+      final sheet = excel[dataSet.currency.name];
+
+      sheet.appendRow(<String>[
+        'Ticker',
+        'Name',
+        'Type',
+        'Count',
+        'Price',
+        'Amount',
+      ]);
 
       for (final item in dataSet.items) {
-        sb
-          ..write(item.ticker)
-          ..write(colSep)
-          ..write(item.name)
-          ..write(colSep)
-          ..write(item.type.name)
-          ..write(colSep)
-          ..write(item.count)
-          ..write(colSep)
-          ..write(item.price)
-          ..write(colSep)
-          ..write(item.amount)
-          ..write(rowSep);
+        sheet.appendRow(<Object>[
+          item.ticker,
+          item.name,
+          item.type.name,
+          item.count,
+          item.price,
+          item.amount,
+        ]);
       }
     }
 
+    excel.delete(excel.getDefaultSheet()!);
+    excel.setDefaultSheet(excel.sheets.keys.first);
+
+    final bytes = excel.save()!;
+
     final file = File(path);
-    await file.writeAsString(sb.toString());
+    await file.writeAsBytes(bytes);
     return file;
   }
 }

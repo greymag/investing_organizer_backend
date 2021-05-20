@@ -33,7 +33,7 @@ class ExportTinkoffCommand extends WarrenCommand {
       final path = p.join(
         p.current,
         p.setExtension(
-            DateTime.now().toIso8601String().replaceAll(':', '_'), '.txt'),
+            DateTime.now().toIso8601String().replaceAll(':', '_'), '.xlsx'),
       );
       final file = await tinkoff.export(path);
       return success(message: 'Exported to ${file.path}');
