@@ -15,8 +15,21 @@ class Tinkoff {
   }
 
   Future<File> export(String path) async {
-    String? accountId;
+    final userApi = _api.user;
 
+    final accounts = (await userApi.accounts().require()).payload;
+
+    final data4Export = <_ExportDataSet>[];
+    for (final account in accounts.accounts) {
+      await _loadData(
+          data4Export, account.brokerAccountId, account.brokerAccountType.name);
+    }
+
+    return _export2Excel(path, data4Export);
+  }
+
+  Future<void> _loadData(List<_ExportDataSet> result, String accountId,
+      String accountTitle) async {
     final portfolioApi = _api.portfolio;
     final marketApi = _api.market;
 
@@ -44,6 +57,7 @@ class Tinkoff {
     for (final position in portfolio.positions) {
       if (position.instrumentType == InstrumentType.currency) continue;
 
+      // TODO: cache
       final candles = (await marketApi
               .candles(position.figi, startDay, endDay, CandleResolution.day)
               .require())
@@ -78,20 +92,22 @@ class Tinkoff {
       addItem(currency.currency, item);
     }
 
-    final data4Export = <_ExportDataSet>[];
     itemsByCurrency.forEach((key, value) {
       final items = value.toList()..sort((a, b) => a.compareTo(b));
-      data4Export.add(_ExportDataSet(currency: key, items: items));
+      result.add(_ExportDataSet(
+        account: accountTitle,
+        currency: key,
+        items: items,
+      ));
     });
-
-    return _export2Excel(path, data4Export);
   }
 
   Future<File> _export2Excel(String path, List<_ExportDataSet> data) async {
     final excel = Excel.createExcel();
 
     for (final dataSet in data) {
-      final sheet = excel[dataSet.currency.name];
+      final sheetName = '${dataSet.account}_${dataSet.currency.name}';
+      final sheet = excel[sheetName];
 
       sheet.appendRow(<String>[
         'Ticker',
@@ -155,10 +171,12 @@ extension _ResultExtension<T> on Future<Result<T>> {
 }
 
 class _ExportDataSet {
+  final String account;
   final Currency currency;
   final List<_ExportDateItem> items;
 
-  _ExportDataSet({required this.currency, required this.items});
+  _ExportDataSet(
+      {required this.account, required this.currency, required this.items});
 }
 
 class _ExportDateItem {
