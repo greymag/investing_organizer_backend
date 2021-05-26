@@ -80,6 +80,8 @@ class Tinkoff {
     }
 
     for (final currency in currencies.currencies) {
+      if (currency.balance == 0) continue;
+
       final item = _ExportDateItem(
         ticker: '',
         name: currency.currency.name,
