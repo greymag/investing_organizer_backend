@@ -21,7 +21,7 @@ packages:
       name: async
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.6.1"
+    version: "2.7.0"
   charcode:
     dependency: transitive
     description:
@@ -168,7 +168,7 @@ packages:
       name: tinkoff_invest
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.0-dev.3"
+    version: "0.1.0"
   typed_data:
     dependency: transitive
     description:
