@@ -14,9 +14,8 @@ class Tinkoff {
     _api = TinkoffInvestApi(token, debug: debug);
   }
 
-  Future<File> export(String path) async {
+  Future<File> exportPortfolio(String path) async {
     final userApi = _api.user;
-
     final accounts = (await userApi.accounts().require()).payload;
 
     final data4Export = <_ExportDataSet>[];
@@ -26,6 +25,11 @@ class Tinkoff {
     }
 
     return _export2Excel(path, data4Export);
+  }
+
+  Future<File> exportOperations(String path) async {
+    final file = File(path);
+    return file;
   }
 
   Future<void> _loadData(List<_ExportDataSet> result, String accountId,
