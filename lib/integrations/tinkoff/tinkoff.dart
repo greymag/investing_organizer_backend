@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:async/async.dart';
-import 'package:excel/excel.dart';
 import 'package:investing_organizer/export/data/portfolio_export_data.dart';
+import 'package:investing_organizer/export/excel/excel_profile_exporter.dart';
 import 'package:tinkoff_invest/tinkoff_invest.dart';
 
 class Tinkoff {
@@ -25,7 +25,8 @@ class Tinkoff {
           data4Export, account.brokerAccountId, account.brokerAccountType.name);
     }
 
-    return _export2Excel(path, PortfolioExportData(data4Export));
+    return const ExcelProfileExporter()
+        .export(path, PortfolioExportData(data4Export));
   }
 
   Future<File> exportOperations(String path) async {
@@ -107,44 +108,6 @@ class Tinkoff {
         items: items,
       ));
     });
-  }
-
-  Future<File> _export2Excel(String path, PortfolioExportData data) async {
-    final excel = Excel.createExcel();
-
-    for (final dataSet in data.sets) {
-      final sheetName = '${dataSet.account}_${dataSet.currency}';
-      final sheet = excel[sheetName];
-
-      sheet.appendRow(<String>[
-        'Ticker',
-        'Name',
-        'Type',
-        'Count',
-        'Price',
-        'Amount',
-      ]);
-
-      for (final item in dataSet.items) {
-        sheet.appendRow(<Object>[
-          item.ticker,
-          item.name,
-          item.type.name,
-          item.count,
-          item.price,
-          item.amount,
-        ]);
-      }
-    }
-
-    excel.delete(excel.getDefaultSheet()!);
-    excel.setDefaultSheet(excel.sheets.keys.first);
-
-    final bytes = excel.save()!;
-
-    final file = File(path);
-    await file.writeAsBytes(bytes);
-    return file;
   }
 }
 
