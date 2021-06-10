@@ -1,17 +1,14 @@
-import 'dart:io';
-
 import 'package:excel/excel.dart';
 import 'package:investing_organizer/export/data/portfolio_export_data.dart';
-import 'package:investing_organizer/export/data_exporter.dart';
 import 'package:tinkoff_invest/tinkoff_invest.dart';
 
-class ExcelPortfolioExporter extends DataExporter<PortfolioExportData> {
+import 'excel_exporter.dart';
+
+class ExcelPortfolioExporter extends ExcelExporter<PortfolioExportData> {
   const ExcelPortfolioExporter();
 
   @override
-  Future<File> export(String targetPath, PortfolioExportData data) async {
-    final excel = Excel.createExcel();
-
+  Future<void> writeToExcel(Excel excel, PortfolioExportData data) async {
     for (final dataSet in data.sets) {
       final sheetName = '${dataSet.account}_${dataSet.currency}';
       final sheet = excel[sheetName];
@@ -36,14 +33,5 @@ class ExcelPortfolioExporter extends DataExporter<PortfolioExportData> {
         ]);
       }
     }
-
-    excel.delete(excel.getDefaultSheet()!);
-    excel.setDefaultSheet(excel.sheets.keys.first);
-
-    final bytes = excel.save()!;
-
-    final file = File(targetPath);
-    await file.writeAsBytes(bytes);
-    return file;
   }
 }
