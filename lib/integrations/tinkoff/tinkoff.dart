@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:investing_organizer/export/data/portfolio_export_data.dart';
-import 'package:investing_organizer/export/excel/excel_profile_exporter.dart';
+import 'package:investing_organizer/export/excel/excel_portfolio_exporter.dart';
 import 'package:tinkoff_invest/tinkoff_invest.dart';
 
 class Tinkoff {
@@ -25,7 +25,7 @@ class Tinkoff {
           data4Export, account.brokerAccountId, account.brokerAccountType.name);
     }
 
-    return const ExcelProfileExporter()
+    return const ExcelPortfolioExporter()
         .export(path, PortfolioExportData(data4Export));
   }
 

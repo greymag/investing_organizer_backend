@@ -5,8 +5,8 @@ import 'package:investing_organizer/export/data/portfolio_export_data.dart';
 import 'package:investing_organizer/export/data_exporter.dart';
 import 'package:tinkoff_invest/tinkoff_invest.dart';
 
-class ExcelProfileExporter extends DataExporter<PortfolioExportData> {
-  const ExcelProfileExporter();
+class ExcelPortfolioExporter extends DataExporter<PortfolioExportData> {
+  const ExcelPortfolioExporter();
 
   @override
   Future<File> export(String targetPath, PortfolioExportData data) async {
