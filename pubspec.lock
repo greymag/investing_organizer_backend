@@ -78,6 +78,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
+  in_date_utils:
+    dependency: "direct main"
+    description:
+      name: in_date_utils
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.1+1"
   innim_lint:
     dependency: "direct dev"
     description:

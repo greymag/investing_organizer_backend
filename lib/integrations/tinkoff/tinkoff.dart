@@ -1,9 +1,13 @@
 import 'dart:io';
 
 import 'package:async/async.dart';
+import 'package:in_date_range/in_date_range.dart';
+import 'package:investing_organizer/export/data/operations_export_data.dart';
 import 'package:investing_organizer/export/data/portfolio_export_data.dart';
+import 'package:investing_organizer/export/excel/excel_operations_exporter.dart';
 import 'package:investing_organizer/export/excel/excel_portfolio_exporter.dart';
 import 'package:tinkoff_invest/tinkoff_invest.dart';
+import 'package:in_date_utils/in_date_utils.dart';
 
 class Tinkoff {
   late final TinkoffInvestApi _api;
@@ -30,8 +34,116 @@ class Tinkoff {
   }
 
   Future<File> exportOperations(String path) async {
-    final file = File(path);
-    return file;
+    final userApi = _api.user;
+    final accounts = (await userApi.accounts().require()).payload;
+
+    // TODO: accept date as args
+    final to = DateUtils.startOfNextDay(DateTime.now());
+    final from = to.subtract(const Duration(days: 7));
+
+    final data4Export = <OperationsExportDataSet>[];
+    for (final account in accounts.accounts) {
+      final dataSet = OperationsExportDataSet(
+        account: account.brokerAccountType.name,
+        taxes: [],
+        comissions: [],
+        coupons: [],
+        dividends: [],
+        otherExpenses: [],
+        otherIncomes: [],
+        payIns: [],
+        payOuts: [],
+        trades: [],
+      );
+
+      final operationsApi = _api.operations;
+      final operations = (await operationsApi
+              .load(from, to, brokerAccountId: account.brokerAccountId)
+              .require())
+          .payload;
+      final marketApi = _api.market;
+
+      final items = operations.operations.toList();
+      items.sort((a, b) => a.date.compareTo(b.date));
+
+      for (final item in items) {
+        final type = item.operationType;
+        if (type == null) {
+          assert(false, 'Null operation type');
+          continue;
+        }
+
+        if (item.status != OperationStatus.done) continue;
+
+        final List<OperationsExportDataItem> list;
+
+        switch (type) {
+          case OperationTypeWithCommission.buy:
+          case OperationTypeWithCommission.buyCard: // TODO: double check
+          case OperationTypeWithCommission.sell:
+            list = dataSet.trades;
+            break;
+          case OperationTypeWithCommission.brokerCommission:
+          case OperationTypeWithCommission.exchangeCommission:
+          case OperationTypeWithCommission.serviceCommission:
+          case OperationTypeWithCommission.marginCommission:
+          case OperationTypeWithCommission.otherCommission:
+            list = dataSet.comissions;
+            break;
+          case OperationTypeWithCommission.payIn:
+            list = dataSet.payIns;
+            break;
+          case OperationTypeWithCommission.payOut:
+            list = dataSet.payOuts;
+            break;
+          case OperationTypeWithCommission.tax:
+          case OperationTypeWithCommission.taxLucre: // TODO: double check
+          case OperationTypeWithCommission.taxDividend:
+          case OperationTypeWithCommission.taxCoupon:
+            list = dataSet.taxes;
+            break;
+          case OperationTypeWithCommission.coupon:
+            list = dataSet.coupons;
+            break;
+          case OperationTypeWithCommission.dividend:
+            list = dataSet.dividends;
+            break;
+          case OperationTypeWithCommission.taxBack: // TODO: move to separate?
+          case OperationTypeWithCommission.securityIn: // TODO: check
+          case OperationTypeWithCommission.repayment: // TODO: check
+          case OperationTypeWithCommission.partRepayment: // TODO: check
+            list = dataSet.otherIncomes;
+            break;
+          case OperationTypeWithCommission.securityOut:
+            list = dataSet.otherExpenses;
+            break;
+        }
+
+        // TODO: cache
+        final instrument = item.figi != null
+            ? (await marketApi.searchByFigi(item.figi!).require()).payload
+            : null;
+
+        list.add(OperationsExportDataItem(
+          date: item.date,
+          ticker: instrument?.ticker,
+          amount: item.payment,
+          currency: item.currency.name,
+        ));
+
+        // TODO: process item.comission?
+      }
+
+      data4Export.add(dataSet);
+    }
+
+    return const ExcelOperationsExporter().export(
+      path,
+      OperationsExportData(
+        range: DateRange(from, to),
+        sets: data4Export,
+      ),
+    );
   }
 
   Future<void> _loadData(List<PortfolioExportDataSet> result, String accountId,
