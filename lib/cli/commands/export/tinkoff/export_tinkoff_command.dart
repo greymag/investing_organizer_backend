@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:in_date_range/in_date_range.dart';
+import 'package:in_date_utils/in_date_utils.dart';
 import 'package:investing_organizer/cli/commands/warren_command.dart';
 import 'package:investing_organizer/integrations/tinkoff/tinkoff.dart';
 import 'package:path/path.dart' as p;
@@ -8,6 +10,7 @@ import 'package:path/path.dart' as p;
 class ExportTinkoffCommand extends WarrenCommand {
   static const _argToken = 'token';
   static const _argType = 'type';
+  static const _argRange = 'range';
 
   ExportTinkoffCommand()
       : super('tinkoff', 'Export data from Tinkoff account.') {
@@ -30,6 +33,13 @@ class ExportTinkoffCommand extends WarrenCommand {
               'Export operations in specified dates range.',
         },
         defaultsTo: _ExportType.portfolio.name,
+      )
+      ..addOption(
+        _argRange,
+        abbr: 'r',
+        help: 'Date range to export. You can specify 2 dates (inclusively), '
+            'e.g. 2021/06/13-2021/06/15',
+        valueHelp: 'YYYY/MM/DD-YYYY/MM/DD',
       );
   }
 
@@ -59,7 +69,18 @@ class ExportTinkoffCommand extends WarrenCommand {
           file = await tinkoff.exportPortfolio(path);
           break;
         case _ExportType.operations:
-          file = await tinkoff.exportOperations(path);
+          final range = _getArgRange();
+          if (range == null) {
+            printUsage();
+            return error(
+              2,
+              message:
+                  'Define date range for export with argument --$_argRange',
+            );
+          }
+          printVerbose('Dates range: $range');
+
+          file = await tinkoff.exportOperations(path, range);
           break;
       }
 
@@ -67,6 +88,34 @@ class ExportTinkoffCommand extends WarrenCommand {
     } catch (e) {
       return error(1, message: 'Failed by: $e');
     }
+  }
+
+  DateRange? _getArgRange() {
+    final input = argResults?[_argRange] as String?;
+    if (input == null) return null;
+
+    final parts = input.split('-');
+    if (parts.length != 2) return null;
+
+    final start = _parseDate(parts[0]);
+    final end = _parseDate(parts[1]);
+
+    if (start == null || end == null || !start.isBefore(end)) return null;
+
+    return DateRange(start, DateUtils.nextDay(end));
+  }
+
+  DateTime? _parseDate(String raw) {
+    final parts = raw.split('/');
+    if (parts.length != 3) return null;
+    if (parts[0].length != 4) return null;
+    final year = int.tryParse(parts[0]);
+    if (year == null) return null;
+    final month = int.tryParse(parts[1]);
+    if (month == null || month < 1 || month > 12) return null;
+    final day = int.tryParse(parts[2]);
+    if (day == null || day < 1 || day > 31) return null;
+    return DateTime(year, month, day);
   }
 }
 

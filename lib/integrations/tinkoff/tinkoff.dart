@@ -7,7 +7,6 @@ import 'package:investing_organizer/export/data/portfolio_export_data.dart';
 import 'package:investing_organizer/export/excel/excel_operations_exporter.dart';
 import 'package:investing_organizer/export/excel/excel_portfolio_exporter.dart';
 import 'package:tinkoff_invest/tinkoff_invest.dart';
-import 'package:in_date_utils/in_date_utils.dart';
 
 class Tinkoff {
   late final TinkoffInvestApi _api;
@@ -33,13 +32,12 @@ class Tinkoff {
         .export(path, PortfolioExportData(data4Export));
   }
 
-  Future<File> exportOperations(String path) async {
+  Future<File> exportOperations(String path, DateRange range) async {
     final userApi = _api.user;
     final accounts = (await userApi.accounts().require()).payload;
 
-    // TODO: accept date as args
-    final to = DateUtils.startOfNextDay(DateTime.now());
-    final from = to.subtract(const Duration(days: 7));
+    final to = range.end;
+    final from = range.start;
 
     final data4Export = <OperationsExportDataSet>[];
     for (final account in accounts.accounts) {
