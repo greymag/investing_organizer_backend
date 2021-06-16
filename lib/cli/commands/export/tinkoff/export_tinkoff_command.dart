@@ -37,8 +37,10 @@ class ExportTinkoffCommand extends WarrenCommand {
       ..addOption(
         _argRange,
         abbr: 'r',
-        help: 'Date range to export. You can specify 2 dates (inclusively), '
-            'e.g. 2021/06/13-2021/06/15',
+        help: 'Date range to export. You can:\n'
+            '- specify 2 dates (inclusively), e.g. -r2021/06/13-2021/06/15;\n'
+            '- specify numbers of previous days, '
+            'e.g. -r-7d exports today and 6 previous days (-r-1 means today);\n',
         valueHelp: 'YYYY/MM/DD-YYYY/MM/DD',
       );
   }
@@ -94,15 +96,30 @@ class ExportTinkoffCommand extends WarrenCommand {
     final input = argResults?[_argRange] as String?;
     if (input == null) return null;
 
-    final parts = input.split('-');
-    if (parts.length != 2) return null;
+    DateTime? start;
+    DateTime? end;
 
-    final start = _parseDate(parts[0]);
-    final end = _parseDate(parts[1]);
+    if (input.startsWith('-')) {
+      if (input.endsWith('d')) {
+        final days = int.tryParse(input.substring(1, input.length - 1));
+        if (days != null && days > 0) {
+          end = DateTime.now();
+          start = DateTime(end.year, end.month, end.day - days + 1);
+        }
+      }
+    } else {
+      final parts = input.split('-');
+      if (parts.length != 2) return null;
+
+      start = _parseDate(parts[0]);
+      end = _parseDate(parts[1]);
+
+      if (end != null) end = DateUtils.nextDay(end);
+    }
 
     if (start == null || end == null || !start.isBefore(end)) return null;
 
-    return DateRange(start, DateUtils.nextDay(end));
+    return DateRange(start, end);
   }
 
   DateTime? _parseDate(String raw) {
