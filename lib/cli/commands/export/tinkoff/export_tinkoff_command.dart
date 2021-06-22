@@ -103,6 +103,7 @@ class ExportTinkoffCommand extends WarrenCommand {
     DateTime? end;
 
     if (input.startsWith('-')) {
+      // -{days}d
       if (input.endsWith('d')) {
         final days = int.tryParse(input.substring(1, input.length - 1));
         if (days != null && days > 0) {
