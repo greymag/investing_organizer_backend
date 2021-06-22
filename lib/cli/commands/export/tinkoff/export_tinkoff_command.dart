@@ -68,7 +68,7 @@ class ExportTinkoffCommand extends WarrenCommand {
       File file;
       switch (type) {
         case _ExportType.portfolio:
-          file = await tinkoff.exportPortfolio(path);
+          file = await tinkoff.exportPortfolioToExcel(path);
           break;
         case _ExportType.operations:
           final range = _getArgRange();

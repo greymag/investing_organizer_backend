@@ -18,7 +18,7 @@ class Tinkoff {
     _api = TinkoffInvestApi(token, debug: debug);
   }
 
-  Future<File> exportPortfolio(String path) async {
+  Future<PortfolioExportData> exportPorfolio() async {
     final userApi = _api.user;
     final accounts = (await userApi.accounts().require()).payload;
 
@@ -28,8 +28,11 @@ class Tinkoff {
           data4Export, account.brokerAccountId, account.brokerAccountType.name);
     }
 
-    return const ExcelPortfolioExporter()
-        .export(path, PortfolioExportData(data4Export));
+    return PortfolioExportData(data4Export);
+  }
+
+  Future<File> exportPortfolioToExcel(String path) async {
+    return const ExcelPortfolioExporter().export(path, await exportPorfolio());
   }
 
   Future<File> exportOperations(String path, DateRange range) async {
