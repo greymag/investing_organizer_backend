@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:in_date_range/in_date_range.dart';
 import 'package:in_date_utils/in_date_utils.dart';
 import 'package:investing_organizer/cli/commands/warren_command.dart';
+import 'package:investing_organizer/integrations/tinkoff/multi_tinkoff.dart';
 import 'package:investing_organizer/integrations/tinkoff/tinkoff.dart';
 import 'package:path/path.dart' as p;
 
@@ -18,7 +19,8 @@ class ExportTinkoffCommand extends WarrenCommand {
       ..addOption(
         _argToken,
         abbr: 't',
-        help: 'Open API Token for Tinkoff account',
+        help: 'Open API Token for Tinkoff account. '
+            'Can contains multiple tokens, separated by comma.',
         valueHelp: 'TOKEN',
       )
       ..addOption(
@@ -55,7 +57,8 @@ class ExportTinkoffCommand extends WarrenCommand {
       return success();
     }
 
-    final tinkoff = Tinkoff(token: token, debug: isVerbose);
+    final tokens = token.split(',');
+    final tinkoff = MultiTinkoff(tokens: tokens, debug: isVerbose);
 
     try {
       // TODO: make an arg
@@ -82,7 +85,7 @@ class ExportTinkoffCommand extends WarrenCommand {
           }
           printVerbose('Dates range: $range');
 
-          file = await tinkoff.exportOperations(path, range);
+          file = await tinkoff.exportOperationsToExcel(path, range);
           break;
       }
 
