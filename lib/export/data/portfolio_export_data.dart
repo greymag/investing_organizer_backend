@@ -4,6 +4,10 @@ class PortfolioExportData {
   final List<PortfolioExportDataSet> sets;
 
   PortfolioExportData(this.sets);
+
+  PortfolioExportData merge(PortfolioExportData other) {
+    return PortfolioExportData([...sets, ...other.sets]);
+  }
 }
 
 class PortfolioExportDataSet {

@@ -24,8 +24,9 @@ class Tinkoff {
 
     final data4Export = <PortfolioExportDataSet>[];
     for (final account in accounts.accounts) {
-      await _loadData(
-          data4Export, account.brokerAccountId, account.brokerAccountType.name);
+      final accountTitle =
+          '${account.brokerAccountId}-${account.brokerAccountType.name}';
+      await _loadData(data4Export, account.brokerAccountId, accountTitle);
     }
 
     return PortfolioExportData(data4Export);

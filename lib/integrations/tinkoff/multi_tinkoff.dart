@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:in_date_range/in_date_range.dart';
+import 'package:investing_organizer/export/data/portfolio_export_data.dart';
+import 'package:investing_organizer/export/excel/excel_portfolio_exporter.dart';
 import 'package:investing_organizer/integrations/tinkoff/tinkoff.dart';
 
 /// Wrapper to works with multiple Tinkoff accounts tokens.
@@ -15,10 +17,15 @@ class MultiTinkoff {
             tokens.map((token) => Tinkoff(token: token, debug: debug)).toList();
 
   Future<File> exportPortfolioToExcel(String path) async {
-    assert(instances.length == 1,
-        'Export portfolio for multiple accounts is not impletented yet');
+    var allData = PortfolioExportData(const []);
 
-    return instances.first.exportPortfolioToExcel(path);
+    for (final tinkoff in instances) {
+      final data = await tinkoff.exportPorfolio();
+
+      allData = allData.merge(data);
+    }
+
+    return const ExcelPortfolioExporter().export(path, allData);
   }
 
   Future<File> exportOperationsToExcel(String path, DateRange range) async {
