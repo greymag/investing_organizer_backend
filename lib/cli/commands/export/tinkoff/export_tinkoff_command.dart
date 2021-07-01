@@ -4,7 +4,6 @@ import 'package:in_date_range/in_date_range.dart';
 import 'package:in_date_utils/in_date_utils.dart';
 import 'package:investing_organizer/cli/commands/warren_command.dart';
 import 'package:investing_organizer/integrations/tinkoff/multi_tinkoff.dart';
-import 'package:investing_organizer/integrations/tinkoff/tinkoff.dart';
 import 'package:path/path.dart' as p;
 
 /// Command to export data from Tinkoff account.

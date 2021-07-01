@@ -25,7 +25,8 @@ class MultiTinkoff {
       allData = allData.merge(data);
     }
 
-    return const ExcelPortfolioExporter().export(path, allData);
+    return const ExcelPortfolioExporter(accountsOnDifferentSheets: false)
+        .export(path, allData);
   }
 
   Future<File> exportOperationsToExcel(String path, DateRange range) async {
