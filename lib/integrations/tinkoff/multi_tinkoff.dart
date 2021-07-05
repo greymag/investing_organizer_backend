@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:in_date_range/in_date_range.dart';
+import 'package:investing_organizer/export/data/operations_export_data.dart';
 import 'package:investing_organizer/export/data/portfolio_export_data.dart';
+import 'package:investing_organizer/export/excel/excel_operations_exporter.dart';
 import 'package:investing_organizer/export/excel/excel_portfolio_exporter.dart';
 import 'package:investing_organizer/integrations/tinkoff/tinkoff.dart';
 
@@ -30,9 +32,14 @@ class MultiTinkoff {
   }
 
   Future<File> exportOperationsToExcel(String path, DateRange range) async {
-    assert(instances.length == 1,
-        'Export operations for multiple accounts is not impletented yet');
+    final allDataSets = <OperationsExportDataSet>[];
 
-    return instances.first.exportOperations(path, range);
+    for (final tinkoff in instances) {
+      final data = await tinkoff.exportOperations(range);
+      allDataSets.addAll(data.sets);
+    }
+
+    return const ExcelOperationsExporter(accountsOnDifferentSheets: false)
+        .export(path, OperationsExportData(range: range, sets: allDataSets));
   }
 }

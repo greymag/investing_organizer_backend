@@ -36,7 +36,7 @@ class Tinkoff {
     return const ExcelPortfolioExporter().export(path, await exportPorfolio());
   }
 
-  Future<File> exportOperations(String path, DateRange range) async {
+  Future<OperationsExportData> exportOperations(DateRange range) async {
     final userApi = _api.user;
     final accounts = (await userApi.accounts().require()).payload;
 
@@ -139,13 +139,15 @@ class Tinkoff {
       data4Export.add(dataSet);
     }
 
-    return const ExcelOperationsExporter().export(
-      path,
-      OperationsExportData(
-        range: DateRange(from, to),
-        sets: data4Export,
-      ),
+    return OperationsExportData(
+      range: DateRange(from, to),
+      sets: data4Export,
     );
+  }
+
+  Future<File> exportOperationsToExcel(String path, DateRange range) async {
+    return const ExcelOperationsExporter()
+        .export(path, await exportOperations(range));
   }
 
   Future<void> _loadData(List<PortfolioExportDataSet> result, String accountId,

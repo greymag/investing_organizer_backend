@@ -11,25 +11,102 @@ class ExcelOperationsExporter extends ExcelExporter<OperationsExportData> {
     'Currency',
   ];
 
-  const ExcelOperationsExporter();
+  final bool accountsOnDifferentSheets;
+
+  const ExcelOperationsExporter({this.accountsOnDifferentSheets = true});
 
   @override
   Future<void> writeToExcel(Excel excel, OperationsExportData data) async {
+    if (accountsOnDifferentSheets) {
+      _writeAccountsOnDifferentSheets(excel, data);
+    } else {
+      _writeAccountsOnSingleSheet(excel, data);
+    }
+  }
+
+  void _writeAccountsOnSingleSheet(Excel excel, OperationsExportData data) {
+    final payIns = <OperationsExportDataItem>[];
+    final payOuts = <OperationsExportDataItem>[];
+    final coupons = <OperationsExportDataItem>[];
+    final dividends = <OperationsExportDataItem>[];
+    final taxes = <OperationsExportDataItem>[];
+    final comissions = <OperationsExportDataItem>[];
+    final trades = <OperationsExportDataItem>[];
+    final otherIncomes = <OperationsExportDataItem>[];
+    final otherExpenses = <OperationsExportDataItem>[];
+
+    // TODO: add column with account
+
+    for (final dataSet in data.sets) {
+      payIns.addAll(dataSet.payIns);
+      payOuts.addAll(dataSet.payOuts);
+      coupons.addAll(dataSet.coupons);
+      dividends.addAll(dataSet.dividends);
+      taxes.addAll(dataSet.taxes);
+      comissions.addAll(dataSet.comissions);
+      trades.addAll(dataSet.trades);
+      otherIncomes.addAll(dataSet.otherIncomes);
+      otherExpenses.addAll(dataSet.otherExpenses);
+    }
+
+    final sheet = excel['Operations'];
+    _fillSheet(
+      sheet,
+      data.range,
+      payIns: _sort(payIns),
+      payOuts: _sort(payOuts),
+      coupons: _sort(coupons),
+      dividends: _sort(dividends),
+      taxes: _sort(taxes),
+      comissions: _sort(comissions),
+      trades: _sort(trades),
+      otherIncomes: _sort(otherIncomes),
+      otherExpenses: _sort(otherExpenses),
+    );
+  }
+
+  void _writeAccountsOnDifferentSheets(Excel excel, OperationsExportData data) {
     for (final dataSet in data.sets) {
       final sheetName = dataSet.account;
       final sheet = excel[sheetName];
 
-      _addDateRange(sheet, data.range);
-      _addDataSubset(
-          sheet, 'Pay In/Outs', _combine(dataSet.payIns, dataSet.payOuts));
-      _addDataSubset(sheet, 'Coupons', dataSet.coupons);
-      _addDataSubset(sheet, 'Dividends', dataSet.dividends);
-      _addDataSubset(sheet, 'Taxes', dataSet.taxes);
-      _addDataSubset(sheet, 'Comissions', dataSet.comissions);
-      _addDataSubset(sheet, 'Trades', dataSet.trades);
-      _addDataSubset(sheet, 'Other',
-          _combine(dataSet.otherIncomes, dataSet.otherExpenses));
+      _fillSheet(
+        sheet,
+        data.range,
+        payIns: dataSet.payIns,
+        payOuts: dataSet.payOuts,
+        coupons: dataSet.coupons,
+        dividends: dataSet.dividends,
+        taxes: dataSet.taxes,
+        comissions: dataSet.comissions,
+        trades: dataSet.trades,
+        otherIncomes: dataSet.otherIncomes,
+        otherExpenses: dataSet.otherExpenses,
+      );
     }
+  }
+
+  void _fillSheet(
+    Sheet sheet,
+    DateRange range, {
+    required List<OperationsExportDataItem> payIns,
+    required List<OperationsExportDataItem> payOuts,
+    required List<OperationsExportDataItem> coupons,
+    required List<OperationsExportDataItem> dividends,
+    required List<OperationsExportDataItem> taxes,
+    required List<OperationsExportDataItem> comissions,
+    required List<OperationsExportDataItem> trades,
+    required List<OperationsExportDataItem> otherExpenses,
+    required List<OperationsExportDataItem> otherIncomes,
+  }) {
+    _addDateRange(sheet, range);
+    _addDataSubset(sheet, 'Pay In/Outs', _combine(payIns, payOuts));
+    _addDataSubset(sheet, 'Coupons', coupons);
+    _addDataSubset(sheet, 'Dividends', dividends);
+    _addDataSubset(sheet, 'Taxes', taxes);
+    _addDataSubset(sheet, 'Comissions', comissions);
+    _addDataSubset(sheet, 'Trades', trades);
+    _addDataSubset(sheet, 'Other', _combine(otherIncomes, otherExpenses));
   }
 
   void _addDateRange(Sheet sheet, DateRange range) {
@@ -66,6 +143,8 @@ class ExcelOperationsExporter extends ExcelExporter<OperationsExportData> {
   }
 
   void _addRow(Sheet sheet, OperationsExportDataItem item) {
+    // TODO: change date format
+    // TODO: change amount format?
     sheet.appendRow(<String>[
       item.date.toIso8601String(),
       item.ticker ?? '',
@@ -77,9 +156,13 @@ class ExcelOperationsExporter extends ExcelExporter<OperationsExportData> {
   List<OperationsExportDataItem> _combine(
       List<OperationsExportDataItem> incomes,
       List<OperationsExportDataItem> expenses) {
-    return List<OperationsExportDataItem>.from(incomes)
-      ..addAll(expenses)
-      ..sort((a, b) => a.date.compareTo(b.date));
+    return _sort(
+        List<OperationsExportDataItem>.from(incomes)..addAll(expenses));
+  }
+
+  List<OperationsExportDataItem> _sort(List<OperationsExportDataItem> list) {
+    list.sort((a, b) => a.date.compareTo(b.date));
+    return list;
   }
 
   String _date(DateTime date) =>
