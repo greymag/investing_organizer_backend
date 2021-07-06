@@ -24,8 +24,7 @@ class Tinkoff {
 
     final data4Export = <PortfolioExportDataSet>[];
     for (final account in accounts.accounts) {
-      final accountTitle =
-          '${account.brokerAccountId}-${account.brokerAccountType.name}';
+      final accountTitle = _getAccoountTitle(account);
       await _loadData(data4Export, account.brokerAccountId, accountTitle);
     }
 
@@ -46,7 +45,7 @@ class Tinkoff {
     final data4Export = <OperationsExportDataSet>[];
     for (final account in accounts.accounts) {
       final dataSet = OperationsExportDataSet(
-        account: account.brokerAccountType.name,
+        account: _getAccoountTitle(account),
         taxes: [],
         comissions: [],
         coupons: [],
@@ -225,6 +224,9 @@ class Tinkoff {
       ));
     });
   }
+
+  String _getAccoountTitle(UserAccount account) =>
+      '${account.brokerAccountId}-${account.brokerAccountType.name}';
 }
 
 extension _ResultExtension<T> on Future<Result<T>> {

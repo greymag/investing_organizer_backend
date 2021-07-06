@@ -3,6 +3,10 @@ import 'package:in_date_range/in_date_range.dart';
 import 'package:investing_organizer/export/data/operations_export_data.dart';
 import 'package:investing_organizer/export/excel/excel_exporter.dart';
 
+typedef _HeaderProcessor = List<String> Function(List<String> values);
+typedef _RowProcessor = List<String> Function(
+    OperationsExportDataItem item, List<String> values);
+
 class ExcelOperationsExporter extends ExcelExporter<OperationsExportData> {
   static const _columns = [
     'Date',
@@ -35,18 +39,25 @@ class ExcelOperationsExporter extends ExcelExporter<OperationsExportData> {
     final otherIncomes = <OperationsExportDataItem>[];
     final otherExpenses = <OperationsExportDataItem>[];
 
-    // TODO: add column with account
+    final accountsByItem = <OperationsExportDataItem, String>{};
 
     for (final dataSet in data.sets) {
-      payIns.addAll(dataSet.payIns);
-      payOuts.addAll(dataSet.payOuts);
-      coupons.addAll(dataSet.coupons);
-      dividends.addAll(dataSet.dividends);
-      taxes.addAll(dataSet.taxes);
-      comissions.addAll(dataSet.comissions);
-      trades.addAll(dataSet.trades);
-      otherIncomes.addAll(dataSet.otherIncomes);
-      otherExpenses.addAll(dataSet.otherExpenses);
+      final account = dataSet.account;
+      void addTo(List<OperationsExportDataItem> to,
+          List<OperationsExportDataItem> items) {
+        items.forEach((item) => accountsByItem[item] = account);
+        to.addAll(items);
+      }
+
+      addTo(payIns, dataSet.payIns);
+      addTo(payOuts, dataSet.payOuts);
+      addTo(coupons, dataSet.coupons);
+      addTo(dividends, dataSet.dividends);
+      addTo(taxes, dataSet.taxes);
+      addTo(comissions, dataSet.comissions);
+      addTo(trades, dataSet.trades);
+      addTo(otherIncomes, dataSet.otherIncomes);
+      addTo(otherExpenses, dataSet.otherExpenses);
     }
 
     final sheet = excel['Operations'];
@@ -62,6 +73,8 @@ class ExcelOperationsExporter extends ExcelExporter<OperationsExportData> {
       trades: _sort(trades),
       otherIncomes: _sort(otherIncomes),
       otherExpenses: _sort(otherExpenses),
+      headerProcessor: (headers) => headers.toList()..insert(1, 'Account'),
+      entryProcessor: (item, row) => row..insert(1, accountsByItem[item]!),
     );
   }
 
@@ -98,15 +111,20 @@ class ExcelOperationsExporter extends ExcelExporter<OperationsExportData> {
     required List<OperationsExportDataItem> trades,
     required List<OperationsExportDataItem> otherExpenses,
     required List<OperationsExportDataItem> otherIncomes,
+    _HeaderProcessor? headerProcessor,
+    _RowProcessor? entryProcessor,
   }) {
+    void subset(String title, List<OperationsExportDataItem> items) =>
+        _addDataSubset(sheet, title, items, headerProcessor, entryProcessor);
+
     _addDateRange(sheet, range);
-    _addDataSubset(sheet, 'Pay In/Outs', _combine(payIns, payOuts));
-    _addDataSubset(sheet, 'Coupons', coupons);
-    _addDataSubset(sheet, 'Dividends', dividends);
-    _addDataSubset(sheet, 'Taxes', taxes);
-    _addDataSubset(sheet, 'Comissions', comissions);
-    _addDataSubset(sheet, 'Trades', trades);
-    _addDataSubset(sheet, 'Other', _combine(otherIncomes, otherExpenses));
+    subset('Pay In/Outs', _combine(payIns, payOuts));
+    subset('Coupons', coupons);
+    subset('Dividends', dividends);
+    subset('Taxes', taxes);
+    subset('Comissions', comissions);
+    subset('Trades', trades);
+    subset('Other', _combine(otherIncomes, otherExpenses));
   }
 
   void _addDateRange(Sheet sheet, DateRange range) {
@@ -116,13 +134,17 @@ class ExcelOperationsExporter extends ExcelExporter<OperationsExportData> {
   }
 
   void _addDataSubset(
-      Sheet sheet, String title, List<OperationsExportDataItem> items) {
+      Sheet sheet,
+      String title,
+      List<OperationsExportDataItem> items,
+      _HeaderProcessor? headerProcessor,
+      _RowProcessor? entryProcessor) {
     if (items.isEmpty) return;
 
     _addTitle(sheet, title);
-    _addHeaders(sheet);
+    _addHeaders(sheet, headerProcessor);
     for (final item in items) {
-      _addRow(sheet, item);
+      _addRow(sheet, item, entryProcessor);
     }
 
     sheet.appendRow(const <String>['']);
@@ -138,19 +160,24 @@ class ExcelOperationsExporter extends ExcelExporter<OperationsExportData> {
     sheet.merge(start, end, customValue: title);
   }
 
-  void _addHeaders(Sheet sheet) {
-    sheet.appendRow(_columns);
+  void _addHeaders(Sheet sheet, _HeaderProcessor? processor) {
+    sheet.appendRow(processor?.call(_columns) ?? _columns);
   }
 
-  void _addRow(Sheet sheet, OperationsExportDataItem item) {
+  void _addRow(
+      Sheet sheet, OperationsExportDataItem item, _RowProcessor? processor) {
     // TODO: change date format
     // TODO: change amount format?
-    sheet.appendRow(<String>[
+    var row = <String>[
       item.date.toIso8601String(),
       item.ticker ?? '',
       item.amount.toString(),
       item.currency,
-    ]);
+    ];
+    if (processor != null) {
+      row = processor(item, row);
+    }
+    sheet.appendRow(row);
   }
 
   List<OperationsExportDataItem> _combine(
