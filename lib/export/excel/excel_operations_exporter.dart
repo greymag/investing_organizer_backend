@@ -4,8 +4,8 @@ import 'package:investing_organizer/export/data/operations_export_data.dart';
 import 'package:investing_organizer/export/excel/excel_exporter.dart';
 
 typedef _HeaderProcessor = List<String> Function(List<String> values);
-typedef _RowProcessor = List<String> Function(
-    OperationsExportDataItem item, List<String> values);
+typedef _RowProcessor = List<dynamic> Function(
+    OperationsExportDataItem item, List<dynamic> values);
 
 class ExcelOperationsExporter extends ExcelExporter<OperationsExportData> {
   static const _columns = [
@@ -171,7 +171,7 @@ class ExcelOperationsExporter extends ExcelExporter<OperationsExportData> {
     var row = <dynamic>[
       formatDate(item.date),
       item.ticker ?? '',
-      item.amount.toString(),
+      item.amount,
       item.currency,
     ];
     if (processor != null) {
