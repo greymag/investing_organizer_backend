@@ -29,4 +29,16 @@ abstract class ExcelExporter<TData> extends DataExporter<TData> {
 
   @protected
   Future<void> writeToExcel(Excel excel, TData data);
+
+  @protected
+  String formatDate(DateTime value) =>
+      '${value.day.nn}.${value.month.nn}.${value.year.nnnn}';
+}
+
+extension _IntExt on int {
+  String get nn => pad(2);
+  String get nnnn => pad(4);
+
+  String pad(int width, [String padding = '0']) =>
+      toString().padLeft(width, padding);
 }

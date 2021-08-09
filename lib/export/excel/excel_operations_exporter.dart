@@ -168,8 +168,8 @@ class ExcelOperationsExporter extends ExcelExporter<OperationsExportData> {
       Sheet sheet, OperationsExportDataItem item, _RowProcessor? processor) {
     // TODO: change date format
     // TODO: change amount format?
-    var row = <String>[
-      item.date.toIso8601String(),
+    var row = <dynamic>[
+      formatDate(item.date),
       item.ticker ?? '',
       item.amount.toString(),
       item.currency,
