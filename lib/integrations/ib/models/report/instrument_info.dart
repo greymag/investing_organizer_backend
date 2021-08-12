@@ -12,4 +12,12 @@ class InstrumentInfo {
 
   InstrumentInfo(this.assetCategory, this.symbol, this.description, this.conid,
       this.securityID, this.listingExch, this.multiplier, this.type, this.code);
+
+  @override
+  String toString() {
+    return 'InstrumentInfo(assetCategory: $assetCategory, symbol: $symbol, '
+        'description: $description, conid: $conid, securityID: $securityID, '
+        'listingExch: $listingExch, multiplier: $multiplier, type: $type, '
+        'code: $code)';
+  }
 }

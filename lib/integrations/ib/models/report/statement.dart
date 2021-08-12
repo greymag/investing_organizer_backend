@@ -7,4 +7,9 @@ class Statement {
 
   Statement(this.brokerName, this.brokerAddress, this.title, this.period,
       this.whenGenerated);
+  @override
+  String toString() {
+    return 'Statement(brokerName: $brokerName, brokerAddress: $brokerAddress, '
+        'title: $title, period: $period, whenGenerated: $whenGenerated)';
+  }
 }
