@@ -25,6 +25,22 @@ class OpenPosition {
       this.unrealizedPL,
       this.code);
 
+  factory OpenPosition.fromMap(Map<String, dynamic> map) {
+    return OpenPosition(
+      map['assetCategory'] as String,
+      map['currency'] as String,
+      map['symbol'] as String,
+      (map['quantity'] as num).toInt(),
+      (map['mult'] as num).toDouble(),
+      (map['costPrice'] as num).toDouble(),
+      (map['costBasis'] as num).toDouble(),
+      (map['closePrice'] as num).toDouble(),
+      (map['value'] as num).toDouble(),
+      (map['unrealizedPL'] as num).toDouble(),
+      map['code'] as String,
+    );
+  }
+
   @override
   String toString() {
     return 'OpenPosition(assetCategory: $assetCategory, currency: $currency, '
