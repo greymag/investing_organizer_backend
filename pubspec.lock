@@ -43,6 +43,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.0.1"
+  csv:
+    dependency: "direct main"
+    description:
+      name: csv
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "5.0.0"
   dio:
     dependency: transitive
     description:
@@ -162,6 +169,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.0"
+  string_ext:
+    dependency: "direct main"
+    description:
+      name: string_ext
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0"
   string_scanner:
     dependency: transitive
     description:
