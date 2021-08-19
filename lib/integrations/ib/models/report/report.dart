@@ -4,14 +4,14 @@ import 'package:investing_organizer/integrations/ib/models/report/statement.dart
 
 /// IB report data.
 class Report {
-  final Statement statement;
-  final AccountInformation accountInformation;
+  final Statement? statement;
+  final AccountInformation? accountInformation;
   // TODO: Net Asset Value
   // TODO: Change in NAV
   // TODO: Mark-to-Market Performance Summary
   // TODO: Realized & Unrealized Performance Summary
   // TODO: Cash Report
-  final List<OpenPosition> openPositions;
+  final List<OpenPosition>? openPositions;
   // TODO: Forex Balance
   // TODO: Trades
   // TODO: Withholding Tax

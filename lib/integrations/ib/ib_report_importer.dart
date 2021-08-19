@@ -4,12 +4,14 @@ import 'package:investing_organizer/integrations/ib/models/report/open_position.
 import 'package:investing_organizer/integrations/ib/models/report/statement.dart';
 import 'package:string_ext/string_ext.dart';
 
+import 'models/report/report.dart';
+
 class IBReportImporter {
   final String csv;
 
   IBReportImporter(this.csv);
 
-  Future<void> parse() async {
+  Future<Report> parse() async {
     Statement? statement;
     AccountInformation? accountInformation;
     List<OpenPosition>? openPositions;
@@ -26,6 +28,7 @@ class IBReportImporter {
           openPositions = _openPositionsByData(data);
           break;
         default:
+          // TODO: handle all sections
           print('Unhandled section: $name');
       }
     }
@@ -49,10 +52,7 @@ class IBReportImporter {
       processSection(curSection, sectionData);
     }
 
-    print('Done');
-    print(statement);
-    print(accountInformation);
-    print(openPositions);
+    return Report(statement, accountInformation, openPositions);
   }
 
   Statement _statementByData(List<List<dynamic>> data) =>
