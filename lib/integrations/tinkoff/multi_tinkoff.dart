@@ -18,20 +18,12 @@ class MultiTinkoff {
         instances =
             tokens.map((token) => Tinkoff(token: token, debug: debug)).toList();
 
-  Future<File> exportPortfolioToExcel(String path) async {
-    var allData = PortfolioExportData(const []);
-
-    for (final tinkoff in instances) {
-      final data = await tinkoff.exportPorfolio();
-
-      allData = allData.merge(data);
-    }
-
-    return const ExcelPortfolioExporter(accountsOnDifferentSheets: false)
-        .export(path, allData);
+  Future<PortfolioExportData> loadPortfolio() async {
+    return PortfolioExportData.byAsync(
+        instances.map((tinkoff) => tinkoff.exportPorfolio()));
   }
 
-  Future<File> exportOperationsToExcel(String path, DateRange range) async {
+  Future<OperationsExportData> loadOperations(DateRange range) async {
     final allDataSets = <OperationsExportDataSet>[];
 
     for (final tinkoff in instances) {
@@ -39,7 +31,16 @@ class MultiTinkoff {
       allDataSets.addAll(data.sets);
     }
 
+    return OperationsExportData(range: range, sets: allDataSets);
+  }
+
+  Future<File> exportPortfolioToExcel(String path) async {
+    return const ExcelPortfolioExporter(accountsOnDifferentSheets: false)
+        .export(path, await loadPortfolio());
+  }
+
+  Future<File> exportOperationsToExcel(String path, DateRange range) async {
     return const ExcelOperationsExporter(accountsOnDifferentSheets: false)
-        .export(path, OperationsExportData(range: range, sets: allDataSets));
+        .export(path, await loadOperations(range));
   }
 }

@@ -5,6 +5,13 @@ class PortfolioExportData {
 
   PortfolioExportData(this.sets);
 
+  factory PortfolioExportData.by(List<PortfolioExportData> list) => list.fold(
+      PortfolioExportData(const []), (allData, data) => allData.merge(data));
+
+  static Future<PortfolioExportData> byAsync(
+          Iterable<Future<PortfolioExportData>> iterable) async =>
+      PortfolioExportData.by(await Future.wait(iterable));
+
   PortfolioExportData merge(PortfolioExportData other) {
     return PortfolioExportData([...sets, ...other.sets]);
   }
