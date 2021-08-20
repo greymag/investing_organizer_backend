@@ -29,11 +29,12 @@ class SummaryReporterSourceIBReport implements SummaryReporterSource {
     final account = report.accountInformation?.account ?? 'n/a';
     final itemsByCurrency = <String, List<PortfolioExportDataItem>>{};
 
+    void addItem(String currency, PortfolioExportDataItem item) =>
+        (itemsByCurrency[currency] ??= <PortfolioExportDataItem>[]).add(item);
+
     final openPositions = report.openPositions;
     if (openPositions != null) {
       for (final position in openPositions) {
-        final currency = position.currency;
-
         final info = report.instrumentsInformation!
             .firstWhere((i) => i.symbol == position.symbol);
 
@@ -46,7 +47,28 @@ class SummaryReporterSourceIBReport implements SummaryReporterSource {
           amount: position.value,
         );
 
-        (itemsByCurrency[currency] ??= <PortfolioExportDataItem>[]).add(item);
+        addItem(position.currency, item);
+      }
+    }
+
+    final forexBalances = report.forexBalances;
+    if (forexBalances != null) {
+      for (final balance in forexBalances) {
+        if (balance.quantity == 0) continue;
+
+        // TODO: use description is terrible, may be use Cash Report after all?
+        final currency = balance.description;
+
+        final item = PortfolioExportDataItem(
+          ticker: '',
+          name: currency,
+          type: tinkoff.InstrumentType.currency,
+          count: balance.quantity.toInt(),
+          price: 1,
+          amount: balance.quantity,
+        );
+
+        addItem(currency, item);
       }
     }
 
