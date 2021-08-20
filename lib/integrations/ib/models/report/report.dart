@@ -1,7 +1,8 @@
-import 'package:investing_organizer/integrations/ib/models/report/account_information.dart';
-import 'package:investing_organizer/integrations/ib/models/report/instrument_info.dart';
-import 'package:investing_organizer/integrations/ib/models/report/open_position.dart';
-import 'package:investing_organizer/integrations/ib/models/report/statement.dart';
+import 'account_information.dart';
+import 'forex_balance.dart';
+import 'instrument_info.dart';
+import 'open_position.dart';
+import 'statement.dart';
 
 /// IB report data.
 class Report {
@@ -13,7 +14,8 @@ class Report {
   // TODO: Realized & Unrealized Performance Summary
   // TODO: Cash Report
   final List<OpenPosition>? openPositions;
-  // TODO: Forex Balance
+  final List<ForexBalance>? forexBalances;
+
   // TODO: Trades
   // TODO: Withholding Tax
   // TODO; Dividends
@@ -24,11 +26,12 @@ class Report {
   // TODO: Notes/Legal Notes
 
   Report(this.statement, this.accountInformation, this.openPositions,
-      this.instrumentsInformation);
+      this.forexBalances, this.instrumentsInformation);
 
   @override
   String toString() =>
       'Report(statement: $statement, accountInformation: $accountInformation, '
       'openPositions: $openPositions, '
+      'forexBalances: $forexBalances, '
       'instrumentsInformation: $instrumentsInformation)';
 }
