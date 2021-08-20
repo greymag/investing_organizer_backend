@@ -48,6 +48,7 @@ class ExcelPortfolioExporter extends ExcelExporter<PortfolioExportData> {
 
   void _writeAccountsOnSingleSheet(Excel excel, PortfolioExportData data) {
     final accounts = data.sets.map((s) => s.account).toSet().toList();
+    final accountsCount = accounts.length;
 
     final map = <String, Map<String, List<PortfolioExportDataItem?>>>{};
 
@@ -69,7 +70,7 @@ class ExcelPortfolioExporter extends ExcelExporter<PortfolioExportData> {
         if (itemsByTicker.containsKey(ticker)) {
           items = itemsByTicker[ticker]!;
         } else {
-          items = List.filled(3, null);
+          items = List.filled(accountsCount, null);
           itemsByTicker[ticker] = items;
         }
 
@@ -102,7 +103,7 @@ class ExcelPortfolioExporter extends ExcelExporter<PortfolioExportData> {
           item.ticker,
           item.name,
           item.type.name,
-          for (var i = 0; i < accounts.length; i++) list.getItemCount(i),
+          for (var i = 0; i < accountsCount; i++) list.getItemCount(i),
           list.sumOf((i) => i?.count ?? 0),
           item.price,
           list.sumOfDouble((i) => i?.amount ?? 0),
