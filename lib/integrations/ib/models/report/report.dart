@@ -1,4 +1,5 @@
 import 'package:investing_organizer/integrations/ib/models/report/account_information.dart';
+import 'package:investing_organizer/integrations/ib/models/report/instrument_info.dart';
 import 'package:investing_organizer/integrations/ib/models/report/open_position.dart';
 import 'package:investing_organizer/integrations/ib/models/report/statement.dart';
 
@@ -18,13 +19,16 @@ class Report {
   // TODO; Dividends
   // TODO: Commission Adjustments
   // TODO: Change in Dividend Accruals
-  // TODO: Financial Instrument Information
+  final List<InstrumentInfo>? instrumentsInformation;
   // TODO: Codes
   // TODO: Notes/Legal Notes
 
-  Report(this.statement, this.accountInformation, this.openPositions);
+  Report(this.statement, this.accountInformation, this.openPositions,
+      this.instrumentsInformation);
 
   @override
   String toString() =>
-      'Report(statement: $statement, accountInformation: $accountInformation, openPositions: $openPositions)';
+      'Report(statement: $statement, accountInformation: $accountInformation, '
+      'openPositions: $openPositions, '
+      'instrumentsInformation: $instrumentsInformation)';
 }

@@ -1,4 +1,5 @@
 import 'package:csv/csv.dart';
+import 'package:investing_organizer/integrations/ib/ib.dart';
 import 'package:investing_organizer/integrations/ib/models/report/account_information.dart';
 import 'package:investing_organizer/integrations/ib/models/report/open_position.dart';
 import 'package:investing_organizer/integrations/ib/models/report/statement.dart';
@@ -15,6 +16,7 @@ class IBReportImporter {
     Statement? statement;
     AccountInformation? accountInformation;
     List<OpenPosition>? openPositions;
+    List<InstrumentInfo>? instrumentsInfo;
 
     void processSection(String name, List<List<dynamic>> data) {
       switch (name) {
@@ -26,6 +28,9 @@ class IBReportImporter {
           break;
         case 'Open Positions':
           openPositions = _openPositionsByData(data);
+          break;
+        case 'Financial Instrument Information':
+          instrumentsInfo = _instrumentsInfoByData(data);
           break;
         default:
           // TODO: handle all sections
@@ -52,7 +57,8 @@ class IBReportImporter {
       processSection(curSection, sectionData);
     }
 
-    return Report(statement, accountInformation, openPositions);
+    return Report(
+        statement, accountInformation, openPositions, instrumentsInfo);
   }
 
   Statement _statementByData(List<List<dynamic>> data) =>
@@ -61,15 +67,22 @@ class IBReportImporter {
   AccountInformation _accountInformationByData(List<List<dynamic>> data) =>
       AccountInformation.fromMap(_fromKV(data));
 
-  List<OpenPosition> _openPositionsByData(List<List<dynamic>> data) {
-    const skip = 3;
+  List<OpenPosition> _openPositionsByData(List<List<dynamic>> data) =>
+      _listByData(data, (d) => OpenPosition.fromMap(d), skip: 3);
+
+  List<InstrumentInfo> _instrumentsInfoByData(List<List<dynamic>> data) =>
+      _listByData(data, (d) => InstrumentInfo.fromMap(d));
+
+  List<T> _listByData<T>(
+      List<List<dynamic>> data, T Function(Map<String, dynamic>) fromMap,
+      {int skip = 2}) {
     final keys = data.first.cast<String>().skip(skip).map(_key);
     return data
         .sublist(1)
         .where((row) => row[1] as String == 'Data')
         .map((row) {
       final data = Map<String, dynamic>.fromIterables(keys, row.skip(skip));
-      return OpenPosition.fromMap(data);
+      return fromMap(data);
     }).toList();
   }
 
