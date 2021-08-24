@@ -1,5 +1,9 @@
 class ForexBalance {
   final String assetCategory;
+
+  /// This is the base (account) currency.
+  ///
+  /// See [description] for an entry's currency code.
   final String currency;
   final String description;
   final double quantity;

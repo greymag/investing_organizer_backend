@@ -16,6 +16,7 @@ class SummaryReporter {
 
   Future<File?> exportPortfolioToExcel(String path) async {
     if (_sources.isEmpty) return null;
+    // TODO: check dates for data from different sources?
     return const ExcelPortfolioExporter(accountsOnDifferentSheets: false)
         .export(path, await _loadPortfolio());
   }

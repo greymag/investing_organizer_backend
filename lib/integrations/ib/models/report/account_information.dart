@@ -9,14 +9,6 @@ class AccountInformation {
   AccountInformation(this.name, this.account, this.accountType,
       this.customerType, this.accountCapabilities, this.baseCurrency);
 
-  @override
-  String toString() {
-    return 'AccountInformation(name: $name, account: $account, '
-        'accountType: $accountType, customerType: $customerType, '
-        'accountCapabilities: $accountCapabilities, '
-        'baseCurrency: $baseCurrency)';
-  }
-
   factory AccountInformation.fromMap(Map<String, dynamic> map) {
     return AccountInformation(
       map['name'] as String,
@@ -26,5 +18,13 @@ class AccountInformation {
       map['accountCapabilities'] as String,
       map['baseCurrency'] as String,
     );
+  }
+
+  @override
+  String toString() {
+    return 'AccountInformation(name: $name, account: $account, '
+        'accountType: $accountType, customerType: $customerType, '
+        'accountCapabilities: $accountCapabilities, '
+        'baseCurrency: $baseCurrency)';
   }
 }
