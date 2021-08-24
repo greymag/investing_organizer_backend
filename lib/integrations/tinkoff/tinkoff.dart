@@ -237,7 +237,7 @@ extension _ResultExtension<T> on Future<Result<T>> {
       if (err is ErrorResponse) {
         throw Exception('Error #${err.payload.code}: ${err.payload.message}');
       } else {
-        throw Exception('Unknown error');
+        throw Exception('Unknown error: $err');
       }
     }
 
