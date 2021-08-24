@@ -56,8 +56,11 @@ class ExportSummaryCommand extends WarrenCommand {
             DateTime.now().toIso8601String().replaceAll(':', '_'), '.xlsx'),
       );
 
+      printVerbose('Start export summary');
+
       final tinkoffToken = argResults?[_argTinkoffToken] as String?;
       if (tinkoffToken != null && tinkoffToken.isNotEmpty) {
+        printVerbose('Add Tinkoff source');
         final tokens = tinkoffToken.split(',');
         reporter.addSource(
             SummaryReporterSourceTinkoff(tokens: tokens, debug: isVerbose));
@@ -72,6 +75,7 @@ class ExportSummaryCommand extends WarrenCommand {
       File? file;
       switch (type) {
         case _ExportType.portfolio:
+          printVerbose('Export portfolio');
           file = await reporter.exportPortfolioToExcel(path);
           break;
       }
@@ -81,7 +85,8 @@ class ExportSummaryCommand extends WarrenCommand {
       } else {
         return success(message: 'Nothing to export');
       }
-    } catch (e) {
+    } catch (e, st) {
+      printVerbose('Exception: $e\n$st');
       return error(2, message: 'Failed by: $e');
     }
   }
