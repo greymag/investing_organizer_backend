@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:investing_organizer/cli/commands/warren_command.dart';
 import 'package:investing_organizer/reports/reporter/summary/summary_reporter.dart';
+import 'package:investing_organizer/reports/reporter/summary/summary_reporter_source_ib_report.dart';
 import 'package:investing_organizer/reports/reporter/summary/summary_reporter_source_tinkoff.dart';
 import 'package:path/path.dart' as p;
 
@@ -9,6 +10,7 @@ import 'package:path/path.dart' as p;
 class ExportSummaryCommand extends WarrenCommand {
   static const _argType = 'type';
   static const _argTinkoffToken = 'tinkoff_token';
+  static const _argIBReportToken = 'ib_report';
 
   ExportSummaryCommand()
       : super('summary', 'Export summary data from all account.') {
@@ -32,6 +34,12 @@ class ExportSummaryCommand extends WarrenCommand {
         help: 'Open API Token for Tinkoff account. '
             'Can contains multiple tokens, separated by comma.',
         valueHelp: 'TOKEN',
+      )
+      ..addOption(
+        _argIBReportToken,
+        abbr: 'r',
+        help: 'Path to Interactive Brokers report csv file.',
+        valueHelp: 'PATH',
       );
   }
 
@@ -53,6 +61,12 @@ class ExportSummaryCommand extends WarrenCommand {
         final tokens = tinkoffToken.split(',');
         reporter.addSource(
             SummaryReporterSourceTinkoff(tokens: tokens, debug: isVerbose));
+      }
+
+      final ibReportPath = argResults?[_argIBReportToken] as String?;
+      if (ibReportPath != null) {
+        printVerbose('Add IB Report source');
+        reporter.addSource(SummaryReporterSourceIBReport.csvPath(ibReportPath));
       }
 
       File? file;
