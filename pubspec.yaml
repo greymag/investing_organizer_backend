@@ -15,7 +15,7 @@ dependencies:
   in_date_utils: ^1.0.1+1
   path: ^1.8.0
   string_ext: ^0.2.0
-  tinkoff_invest: ^0.1.0
+  tinkoff_invest: ^0.1.1
 
 dev_dependencies:
   innim_lint: ^0.1.0
