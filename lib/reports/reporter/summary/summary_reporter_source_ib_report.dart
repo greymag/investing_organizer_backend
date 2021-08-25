@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:in_date_range/in_date_range.dart';
+import 'package:investing_organizer/export/data/operations_export_data.dart';
 import 'package:investing_organizer/export/data/portfolio_export_data.dart';
 import 'package:investing_organizer/integrations/ib/ib_report_importer.dart';
 
@@ -84,6 +86,12 @@ class SummaryReporterSourceIBReport implements SummaryReporterSource {
     // TODO: add cash
 
     return PortfolioExportData(sets);
+  }
+
+  @override
+  Future<OperationsExportData> getOperations(DateRange range) {
+    // TODO: implement getOperations
+    throw UnimplementedError();
   }
 }
 
