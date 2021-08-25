@@ -3,6 +3,7 @@ import 'forex_balance.dart';
 import 'instrument_info.dart';
 import 'open_position.dart';
 import 'statement.dart';
+import 'withholding_tax.dart';
 
 /// IB report data.
 class Report {
@@ -17,7 +18,7 @@ class Report {
   final List<ForexBalance>? forexBalances;
 
   // TODO: Trades
-  // TODO: Withholding Tax
+  final List<WithholdingTax> withholdingTaxes;
   // TODO; Dividends
   // TODO: Commission Adjustments
   // TODO: Change in Dividend Accruals
@@ -26,12 +27,13 @@ class Report {
   // TODO: Notes/Legal Notes
 
   Report(this.statement, this.accountInformation, this.openPositions,
-      this.forexBalances, this.instrumentsInformation);
+      this.forexBalances, this.withholdingTaxes, this.instrumentsInformation);
 
   @override
   String toString() =>
       'Report(statement: $statement, accountInformation: $accountInformation, '
       'openPositions: $openPositions, '
       'forexBalances: $forexBalances, '
+      'withholdingTaxes: $withholdingTaxes, '
       'instrumentsInformation: $instrumentsInformation)';
 }

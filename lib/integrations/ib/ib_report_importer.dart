@@ -3,6 +3,7 @@ import 'package:investing_organizer/integrations/ib/ib.dart';
 import 'package:string_ext/string_ext.dart';
 
 import 'models/report/report.dart';
+import 'models/report/withholding_tax.dart';
 
 class IBReportImporter {
   final String csv;
@@ -14,6 +15,7 @@ class IBReportImporter {
     AccountInformation? accountInformation;
     List<OpenPosition>? openPositions;
     List<ForexBalance>? forexBalances;
+    List<WithholdingTax>? withholdingTaxes;
     List<InstrumentInfo>? instrumentsInfo;
 
     void processSection(String name, List<List<dynamic>> data) {
@@ -29,6 +31,9 @@ class IBReportImporter {
           break;
         case 'Forex Balances':
           forexBalances = _forexBalancesByData(data);
+          break;
+        case 'Withholding Tax':
+          withholdingTaxes = _withholdingTaxesByData(data);
           break;
         case 'Financial Instrument Information':
           instrumentsInfo = _instrumentsInfoByData(data);
@@ -58,8 +63,14 @@ class IBReportImporter {
       processSection(curSection, sectionData);
     }
 
-    return Report(statement, accountInformation, openPositions, forexBalances,
-        instrumentsInfo);
+    return Report(
+      statement,
+      accountInformation,
+      openPositions,
+      forexBalances,
+      withholdingTaxes ?? [],
+      instrumentsInfo,
+    );
   }
 
   Statement _statementByData(List<List<dynamic>> data) =>
@@ -73,6 +84,10 @@ class IBReportImporter {
 
   List<ForexBalance> _forexBalancesByData(List<List<dynamic>> data) =>
       _listByData(data, (d) => ForexBalance.fromMap(d),
+          filter: (row) => (row[3] as String).isNotEmpty);
+
+  List<WithholdingTax> _withholdingTaxesByData(List<List<dynamic>> data) =>
+      _listByData(data, (d) => WithholdingTax.fromMap(d),
           filter: (row) => (row[3] as String).isNotEmpty);
 
   List<InstrumentInfo> _instrumentsInfoByData(List<List<dynamic>> data) =>
