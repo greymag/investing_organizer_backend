@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:investing_organizer/cli/args/parsers/date_range_arg_parser.dart';
 import 'package:investing_organizer/cli/commands/warren_command.dart';
 import 'package:investing_organizer/reports/reporter/summary/summary_reporter.dart';
 import 'package:investing_organizer/reports/reporter/summary/summary_reporter_source_ib_report.dart';
@@ -11,6 +12,7 @@ class ExportSummaryCommand extends WarrenCommand {
   static const _argType = 'type';
   static const _argTinkoffToken = 'tinkoff_token';
   static const _argIBReportToken = 'ib_report';
+  static const _argDates = 'dates';
 
   ExportSummaryCommand()
       : super('summary', 'Export summary data from all account.') {
@@ -40,6 +42,13 @@ class ExportSummaryCommand extends WarrenCommand {
         abbr: 'r',
         help: 'Path to Interactive Brokers report csv file.',
         valueHelp: 'PATH',
+      )
+      ..addOption(
+        _argDates,
+        abbr: 'd',
+        help: 'Date range to export operations. '
+            '${DateRangeArgParser.helpExamples}',
+        valueHelp: 'YYYY/MM/DD-YYYY/MM/DD',
       );
   }
 
@@ -78,6 +87,20 @@ class ExportSummaryCommand extends WarrenCommand {
           printVerbose('Export portfolio');
           file = await reporter.exportPortfolioToExcel(path);
           break;
+        case _ExportType.operations:
+          final range = argResults.dateRange(_argDates);
+          if (range == null) {
+            printUsage();
+            return error(
+              2,
+              message: 'Define date range for export with and argument '
+                  '--$_argDates',
+            );
+          }
+
+          printVerbose('Export operations for range: $range');
+          file = await reporter.exportOperationsToExcel(path, range);
+          break;
       }
 
       if (file != null) {
@@ -95,7 +118,7 @@ class ExportSummaryCommand extends WarrenCommand {
 // TODO: separate
 enum _ExportType {
   portfolio,
-  // operations,
+  operations,
 }
 
 extension _ExportTypeExtension on _ExportType {
