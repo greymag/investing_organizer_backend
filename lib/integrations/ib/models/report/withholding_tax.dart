@@ -1,9 +1,14 @@
 import 'from_map.dart';
+import 'operation.dart';
 
-class WithholdingTax {
+class WithholdingTax extends Operation {
+  @override
   final String currency;
+  @override
   final DateTime date;
+  @override
   final String description;
+  @override
   final double amount;
   final String code;
 

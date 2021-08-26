@@ -16,6 +16,7 @@ class IBReportImporter {
     List<OpenPosition>? openPositions;
     List<ForexBalance>? forexBalances;
     List<WithholdingTax>? withholdingTaxes;
+    List<Dividend>? dividends;
     List<InstrumentInfo>? instrumentsInfo;
 
     void processSection(String name, List<List<dynamic>> data) {
@@ -31,6 +32,9 @@ class IBReportImporter {
           break;
         case 'Forex Balances':
           forexBalances = _forexBalancesByData(data);
+          break;
+        case 'Dividends':
+          dividends = _dividendsByData(data);
           break;
         case 'Withholding Tax':
           withholdingTaxes = _withholdingTaxesByData(data);
@@ -68,6 +72,7 @@ class IBReportImporter {
       accountInformation,
       openPositions,
       forexBalances,
+      dividends ?? [],
       withholdingTaxes ?? [],
       instrumentsInfo,
     );
@@ -88,6 +93,10 @@ class IBReportImporter {
 
   List<WithholdingTax> _withholdingTaxesByData(List<List<dynamic>> data) =>
       _listByData(data, (d) => WithholdingTax.fromMap(d),
+          filter: (row) => (row[3] as String).isNotEmpty);
+
+  List<Dividend> _dividendsByData(List<List<dynamic>> data) =>
+      _listByData(data, (d) => Dividend.fromMap(d),
           filter: (row) => (row[3] as String).isNotEmpty);
 
   List<InstrumentInfo> _instrumentsInfoByData(List<List<dynamic>> data) =>

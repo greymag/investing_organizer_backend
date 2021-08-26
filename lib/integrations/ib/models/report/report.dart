@@ -1,4 +1,5 @@
 import 'account_information.dart';
+import 'dividend.dart';
 import 'forex_balance.dart';
 import 'instrument_info.dart';
 import 'open_position.dart';
@@ -18,22 +19,30 @@ class Report {
   final List<ForexBalance>? forexBalances;
 
   // TODO: Trades
+  final List<Dividend> dividends;
   final List<WithholdingTax> withholdingTaxes;
-  // TODO; Dividends
   // TODO: Commission Adjustments
   // TODO: Change in Dividend Accruals
   final List<InstrumentInfo>? instrumentsInformation;
   // TODO: Codes
   // TODO: Notes/Legal Notes
 
-  Report(this.statement, this.accountInformation, this.openPositions,
-      this.forexBalances, this.withholdingTaxes, this.instrumentsInformation);
+  Report(
+    this.statement,
+    this.accountInformation,
+    this.openPositions,
+    this.forexBalances,
+    this.dividends,
+    this.withholdingTaxes,
+    this.instrumentsInformation,
+  );
 
   @override
   String toString() =>
       'Report(statement: $statement, accountInformation: $accountInformation, '
       'openPositions: $openPositions, '
       'forexBalances: $forexBalances, '
+      'dividends: $dividends, '
       'withholdingTaxes: $withholdingTaxes, '
       'instrumentsInformation: $instrumentsInformation)';
 }
