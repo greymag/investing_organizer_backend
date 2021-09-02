@@ -12,6 +12,7 @@ import 'summary_reporter.dart';
 
 class SummaryReporterSourceIBReport implements SummaryReporterSource {
   final IBReportImporter _importer;
+  Future<ib.Report>? _report;
 
   SummaryReporterSourceIBReport(this._importer);
 
@@ -26,9 +27,8 @@ class SummaryReporterSourceIBReport implements SummaryReporterSource {
 
   @override
   Future<PortfolioExportData> getData() async {
-    final report = await _importer.parse();
-
-    final account = report.accountInformation?.account ?? 'n/a';
+    final report = await _getReport();
+    final account = _getAccountName(report);
     final itemsByCurrency = <String, List<PortfolioExportDataItem>>{};
 
     void addItem(String currency, PortfolioExportDataItem item) =>
@@ -83,16 +83,42 @@ class SummaryReporterSourceIBReport implements SummaryReporterSource {
       ));
     });
 
-    // TODO: add cash
-
     return PortfolioExportData(sets);
   }
 
   @override
-  Future<OperationsExportData> getOperations(DateRange range) {
-    // TODO: implement getOperations
-    throw UnimplementedError();
+  Future<OperationsExportData> getOperations(DateRange range) async {
+    final report = await _getReport();
+    // TODO: check dates range
+
+    List<OperationsExportDataItem> convert<T extends ib.Operation>(
+        List<T> list) {
+      return list
+          .where((e) => range.contains(e.date))
+          .map((e) => e.toExport())
+          .toList();
+    }
+
+    final dataSet = OperationsExportDataSet(
+      account: _getAccountName(report),
+      taxes: convert(report.withholdingTaxes),
+      comissions: [], // TODO: comissions
+      coupons: [], // TODO: coupons
+      dividends: convert(report.dividends),
+      otherExpenses: [], // TODO: otherExpenses
+      otherIncomes: [], // TODO: otherIncomes
+      payIns: [], // TODO: payIns
+      payOuts: [], // TODO: payOuts
+      trades: [], // TODO: trades
+    );
+
+    return OperationsExportData(range: range, sets: [dataSet]);
   }
+
+  Future<ib.Report> _getReport() => _report ??= _importer.parse();
+
+  String _getAccountName(ib.Report report) =>
+      report.accountInformation?.account ?? 'n/a';
 }
 
 extension IBInstumentTypeExtension on ib.InstrumentType {
@@ -106,4 +132,13 @@ extension IBInstumentTypeExtension on ib.InstrumentType {
         return tinkoff.InstrumentType.stock;
     }
   }
+}
+
+extension IBIOperationExtension on ib.Operation {
+  OperationsExportDataItem toExport() => OperationsExportDataItem(
+        date: date,
+        ticker: ticker,
+        amount: amount,
+        currency: currency,
+      );
 }
