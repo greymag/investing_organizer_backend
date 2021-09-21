@@ -16,7 +16,12 @@ class Tinkoff {
     required String token,
     bool debug = false,
   }) {
-    _api = TinkoffInvestApi(token, debug: debug);
+    _api = TinkoffInvestApi(
+      token,
+      debug: debug,
+      config:
+          const TinkoffInvestApiConfig(connectTimeout: Duration(seconds: 10)),
+    );
   }
 
   Future<PortfolioExportData> exportPorfolio() async {
