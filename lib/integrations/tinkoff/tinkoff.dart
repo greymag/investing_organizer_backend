@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:in_date_range/in_date_range.dart';
+import 'package:in_date_utils/in_date_utils.dart';
 import 'package:investing_organizer/export/data/operations_export_data.dart';
 import 'package:investing_organizer/export/data/portfolio_export_data.dart';
 import 'package:investing_organizer/export/excel/excel_operations_exporter.dart';
@@ -161,8 +162,7 @@ class Tinkoff {
 
     // TODO: accept date as an arg
     final now = DateTime.now();
-    final startDay = DateTime(now.year, now.month, now.day);
-    final endDay = DateTime(now.year, now.month, now.day + 1);
+    final day = DateRange.day(now);
 
     final itemsByCurrency = <Currency, List<PortfolioExportDataItem>>{};
 
@@ -178,14 +178,32 @@ class Tinkoff {
     for (final position in portfolio.positions) {
       if (position.instrumentType == InstrumentType.currency) continue;
 
-      // TODO: cache
-      final candles = (await marketApi
-              .candles(position.figi, startDay, endDay, CandleResolution.day)
-              .require())
-          .payload;
+      Future<double> loadPrice(DateRange range, {int attempt = 0}) async {
+        try {
+          // TODO: cache
+          final candles = (await marketApi
+                  .candles(position.figi, range.start, range.end,
+                      CandleResolution.day)
+                  .require())
+              .payload;
+
+          return candles.candles.first.c;
+        } catch (e) {
+          // shift day only 1 time
+          if (attempt < 1) {
+            return loadPrice(
+              DateRange.day(DateUtils.previousDay(range.start)),
+              attempt: attempt + 1,
+            );
+          }
+
+          throw Exception(
+              "Can't load price for ${position.ticker} [${position.figi}]: $e");
+        }
+      }
 
       final currency = position.averagePositionPrice!.currency;
-      final price = candles.candles.first.c;
+      final price = await loadPrice(day);
       final amount = price * position.balance;
 
       final item = PortfolioExportDataItem(
