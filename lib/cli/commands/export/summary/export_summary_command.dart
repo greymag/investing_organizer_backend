@@ -59,10 +59,11 @@ class ExportSummaryCommand extends WarrenCommand {
 
     try {
       // TODO: make an arg
+      final now = DateTime.now();
+      final todayDate = now.toIso8601String().split('T').first;
       final path = p.join(
         p.current,
-        p.setExtension(
-            DateTime.now().toIso8601String().replaceAll(':', '_'), '.xlsx'),
+        p.setExtension('${todayDate}_${type.name}', '.xlsx'),
       );
 
       printVerbose('Start export summary');
