@@ -2,6 +2,7 @@ library ib;
 
 export './models/report/account_information.dart';
 export './models/report/asset_class.dart';
+export './models/report/deposit_or_withdrawal.dart';
 export './models/report/dividend.dart';
 export './models/report/forex_balance.dart';
 export './models/report/instrument_info.dart';

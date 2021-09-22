@@ -1,4 +1,5 @@
 import 'account_information.dart';
+import 'deposit_or_withdrawal.dart';
 import 'dividend.dart';
 import 'forex_balance.dart';
 import 'instrument_info.dart';
@@ -19,6 +20,7 @@ class Report {
   final List<ForexBalance>? forexBalances;
 
   // TODO: Trades
+  final List<DepositOrWithdrawal> depositsAndWithdrawals;
   final List<Dividend> dividends;
   final List<WithholdingTax> withholdingTaxes;
   // TODO: Commission Adjustments
@@ -32,6 +34,7 @@ class Report {
     this.accountInformation,
     this.openPositions,
     this.forexBalances,
+    this.depositsAndWithdrawals,
     this.dividends,
     this.withholdingTaxes,
     this.instrumentsInformation,
@@ -42,6 +45,7 @@ class Report {
       'Report(statement: $statement, accountInformation: $accountInformation, '
       'openPositions: $openPositions, '
       'forexBalances: $forexBalances, '
+      'depositsAndWithdrawals: $depositsAndWithdrawals, '
       'dividends: $dividends, '
       'withholdingTaxes: $withholdingTaxes, '
       'instrumentsInformation: $instrumentsInformation)';
