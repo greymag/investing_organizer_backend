@@ -92,7 +92,7 @@ class SummaryReporterSourceIBReport implements SummaryReporterSource {
     // TODO: check dates range
 
     List<OperationsExportDataItem> convert<T extends ib.Operation>(
-        List<T> list) {
+        Iterable<T> list) {
       return list
           .where((e) => range.contains(e.date))
           .map((e) => e.toExport())
@@ -107,8 +107,9 @@ class SummaryReporterSourceIBReport implements SummaryReporterSource {
       dividends: convert(report.dividends),
       otherExpenses: [], // TODO: otherExpenses
       otherIncomes: [], // TODO: otherIncomes
-      payIns: [], // TODO: payIns
-      payOuts: [], // TODO: payOuts
+      payIns: convert(report.depositsAndWithdrawals.where((e) => e.amount > 0)),
+      payOuts:
+          convert(report.depositsAndWithdrawals.where((e) => e.amount < 0)),
       trades: [], // TODO: trades
     );
 

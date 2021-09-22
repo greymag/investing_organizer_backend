@@ -26,6 +26,9 @@ class DepositOrWithdrawal extends Operation {
   DateTime get date => settleDate;
 
   @override
+  String? get ticker => null;
+
+  @override
   String toString() {
     return 'DepositOrWithdrawal(currency: $currency, settleDate: $settleDate, '
         'description: $description, amount: $amount)';
