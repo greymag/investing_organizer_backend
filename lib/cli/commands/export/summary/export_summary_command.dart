@@ -61,10 +61,7 @@ class ExportSummaryCommand extends WarrenCommand {
       // TODO: make an arg
       final now = DateTime.now();
       final todayDate = now.toIso8601String().split('T').first;
-      final path = p.join(
-        p.current,
-        p.setExtension('${todayDate}_${type.name}', '.xlsx'),
-      );
+      final path = _getNotExistPath('${todayDate}_${type.name}', '.xlsx');
 
       printVerbose('Start export summary');
 
@@ -113,6 +110,25 @@ class ExportSummaryCommand extends WarrenCommand {
       printVerbose('Exception: $e\n$st');
       return error(2, message: 'Failed by: $e');
     }
+  }
+
+  String _getNotExistPath(String baseName, String extension) {
+    final basePath = p.join(p.current, baseName);
+
+    var i = 0;
+    while (i < 1e+10) {
+      var tmpBasePath = basePath;
+      if (i > 0) tmpBasePath += '_$i';
+
+      final path = p.setExtension(tmpBasePath, extension);
+      if (!File(path).existsSync()) {
+        return path;
+      } else {
+        i++;
+      }
+    }
+
+    throw Exception("Can't generate unique path");
   }
 }
 
