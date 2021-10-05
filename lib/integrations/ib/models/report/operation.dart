@@ -5,7 +5,6 @@ abstract class Operation {
   double get amount;
 
   String? get ticker {
-    // TODO: ticker from desc
-    return description;
+    return description.split('(').first;
   }
 }
