@@ -164,10 +164,9 @@ class Tinkoff {
     final currencies =
         (await portfolioApi.currencies(accountId).require()).payload;
 
-
     // TODO: accept date as an arg
     final now = DateTime.now();
-    final day = DateRange.day(now);
+    final day = _getWorkingDayNotEarlierThan(now);
 
     final itemsByCurrency = <Currency, List<PortfolioExportDataItem>>{};
 
@@ -197,7 +196,7 @@ class Tinkoff {
           // shift day only 1 time
           if (attempt < 1) {
             return loadPrice(
-              DateRange.day(DateUtils.previousDay(range.start)),
+              _getWorkingDayNotEarlierThan(DateUtils.previousDay(range.start)),
               attempt: attempt + 1,
             );
           }
@@ -250,6 +249,16 @@ class Tinkoff {
 
   String _getAccoountTitle(UserAccount account) =>
       '${account.brokerAccountId}-${account.brokerAccountType.name}';
+
+  DateRange _getWorkingDayNotEarlierThan(DateTime date) {
+    var res = date;
+
+    while (res.weekday == DateTime.saturday || res.weekday == DateTime.sunday) {
+      res = DateUtils.previousDay(res);
+    }
+
+    return DateRange.day(res);
+  }
 }
 
 extension _ResultExtension<T> on Future<Result<T>> {
