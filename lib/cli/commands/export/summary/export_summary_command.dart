@@ -106,6 +106,8 @@ class ExportSummaryCommand extends WarrenCommand {
       } else {
         return success(message: 'Nothing to export');
       }
+    } on RunException catch (e) {
+      return exception(e);
     } catch (e, st) {
       printVerbose('Exception: $e\n$st');
       return error(2, message: 'Failed by: $e');

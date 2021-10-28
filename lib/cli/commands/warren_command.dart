@@ -1,5 +1,6 @@
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
+import 'package:investing_organizer/cli/exceptions/run_exception.dart';
 import 'package:investing_organizer/cli/out/out.dart' as out;
 import 'package:meta/meta.dart';
 
@@ -53,5 +54,11 @@ abstract class WarrenCommand extends Command<int> {
   int error(int code, {String? message}) {
     if (message != null) printError(message);
     return code;
+  }
+
+  /// Returns error code and prints a error message if provided.
+  @protected
+  int exception(RunException exception) {
+    return error(exception.code, message: exception.message);
   }
 }
