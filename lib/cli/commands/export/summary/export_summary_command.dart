@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:investing_organizer/cli/args/parsers/date_range_arg_parser.dart';
 import 'package:investing_organizer/cli/commands/warren_command.dart';
+import 'package:investing_organizer/cli/exceptions/run_exception.dart';
 import 'package:investing_organizer/reports/reporter/summary/summary_reporter.dart';
 import 'package:investing_organizer/reports/reporter/summary/summary_reporter_source_ib_report.dart';
 import 'package:investing_organizer/reports/reporter/summary/summary_reporter_source_tinkoff.dart';
 import 'package:path/path.dart' as p;
+import 'package:list_ext/list_ext.dart';
 
 /// Command to export summary data from all account.
 class ExportSummaryCommand extends WarrenCommand {
@@ -59,9 +61,6 @@ class ExportSummaryCommand extends WarrenCommand {
 
     try {
       // TODO: make an arg
-      final now = DateTime.now();
-      final todayDate = now.toIso8601String().split('T').first;
-      final path = _getNotExistPath('${todayDate}_${type.name}', '.xlsx');
 
       printVerbose('Start export summary');
 
@@ -79,39 +78,70 @@ class ExportSummaryCommand extends WarrenCommand {
         reporter.addSource(SummaryReporterSourceIBReport.csvPath(ibReportPath));
       }
 
-      File? file;
+      final exported = <File>[];
       switch (type) {
         case _ExportType.portfolio:
-          printVerbose('Export portfolio');
-          file = await reporter.exportPortfolioToExcel(path);
+          final file = await _exportPortfolio(reporter);
+          exported.addIfNotNull(file);
           break;
         case _ExportType.operations:
-          final range = argResults.dateRange(_argDates);
-          if (range == null) {
-            printUsage();
-            return error(
-              2,
-              message: 'Define date range for export with and argument '
-                  '--$_argDates',
-            );
-          }
-
-          printVerbose('Export operations for range: $range');
-          file = await reporter.exportOperationsToExcel(path, range);
+          final file = await _exportOperations(reporter);
+          exported.addIfNotNull(file);
+          break;
+        case _ExportType.all:
+          printVerbose('Export all');
+          exported
+            ..addIfNotNull(await _exportPortfolio(reporter))
+            ..addIfNotNull(await _exportOperations(reporter));
           break;
       }
 
-      if (file != null) {
-        return success(message: 'Exported to ${file.path}');
+      final String message;
+
+      if (exported.isEmpty) {
+        message = 'Nothing to export';
+      } else if (exported.length == 1) {
+        message = 'Exported to ${exported.first.path}';
       } else {
-        return success(message: 'Nothing to export');
+        final paths = exported.map((e) => e.path).join('\n');
+        message = 'Exported:\n$paths';
       }
+
+      if (exported.length == 1) {
+        return success(message: 'Exported to ${exported.first.path}');
+      } else {}
+      return success(message: message);
     } on RunException catch (e) {
       return exception(e);
     } catch (e, st) {
       printVerbose('Exception: $e\n$st');
       return error(2, message: 'Failed by: $e');
     }
+  }
+
+  Future<File?> _exportPortfolio(SummaryReporter reporter) async {
+    printVerbose('Export portfolio');
+    final path = _getTargetFilePath(_ExportType.portfolio);
+    return reporter.exportPortfolioToExcel(path);
+  }
+
+  Future<File?> _exportOperations(SummaryReporter reporter) async {
+    final path = _getTargetFilePath(_ExportType.operations);
+    final range = argResults.dateRange(_argDates);
+    if (range == null) {
+      printUsage();
+      throw RunException.err(
+          'Define date range for export with and argument --$_argDates');
+    }
+
+    printVerbose('Export operations for range: $range');
+    return reporter.exportOperationsToExcel(path, range);
+  }
+
+  String _getTargetFilePath(_ExportType type) {
+    final now = DateTime.now();
+    final todayDate = now.toIso8601String().split('T').first;
+    return _getNotExistPath('${todayDate}_${type.name}', '.xlsx');
   }
 
   String _getNotExistPath(String baseName, String extension) {
@@ -135,10 +165,7 @@ class ExportSummaryCommand extends WarrenCommand {
 }
 
 // TODO: separate
-enum _ExportType {
-  portfolio,
-  operations,
-}
+enum _ExportType { portfolio, operations, all }
 
 extension _ExportTypeExtension on _ExportType {
   String get name => toString().split('.').last;
