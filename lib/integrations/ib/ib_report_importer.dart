@@ -72,8 +72,8 @@ class IBReportImporter {
     }
 
     return Report(
-      statement,
-      accountInformation,
+      statement!,
+      accountInformation!,
       openPositions,
       forexBalances,
       depositsAndWithdrawals ?? [],

@@ -9,8 +9,8 @@ import 'withholding_tax.dart';
 
 /// IB report data.
 class Report {
-  final Statement? statement;
-  final AccountInformation? accountInformation;
+  final Statement statement;
+  final AccountInformation accountInformation;
   // TODO: Net Asset Value
   // TODO: Change in NAV
   // TODO: Mark-to-Market Performance Summary
