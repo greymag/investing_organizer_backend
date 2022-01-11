@@ -74,6 +74,10 @@ class ExportSummaryCommand extends WarrenCommand {
 
       final ibReportPath = argResults?[_argIBReportToken] as String?;
       if (ibReportPath != null) {
+        if (p.extension(ibReportPath) != '.csv') {
+          return error(2, message: 'IB report in CSV required');
+        }
+
         printVerbose('Add IB Report source');
         reporter.addSource(SummaryReporterSourceIBReport.csvPath(ibReportPath));
       }
