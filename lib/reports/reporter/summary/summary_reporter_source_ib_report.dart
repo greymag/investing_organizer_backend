@@ -89,7 +89,11 @@ class SummaryReporterSourceIBReport implements SummaryReporterSource {
   @override
   Future<OperationsExportData> getOperations(DateRange range) async {
     final report = await _getReport();
-    // TODO: check dates range
+
+    if (!report.statement.period.includes(range)) {
+      throw Exception('Report period ${report.statement.period} '
+          "doesn't contains range: $range");
+    }
 
     List<OperationsExportDataItem> convert<T extends ib.Operation>(
         Iterable<T> list) {
