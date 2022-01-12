@@ -118,8 +118,7 @@ class SummaryReporterSourceIBReport implements SummaryReporterSource {
 
   Future<ib.Report> _getReport() => _report ??= _importer.parse();
 
-  String _getAccountName(ib.Report report) =>
-      report.accountInformation?.account ?? 'n/a';
+  String _getAccountName(ib.Report report) => report.accountInformation.account;
 }
 
 extension IBInstumentTypeExtension on ib.InstrumentType {
