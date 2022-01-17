@@ -6,7 +6,7 @@ class DateRangeArgParser {
   static const helpExamples = 'You can:\n'
       '- specify 2 dates (inclusively), e.g. -r2021/06/13-2021/06/15;\n'
       '- specify numbers of previous days, '
-      'e.g. -r-7d exports today and 6 previous days (-r-1 means today);\n';
+      'e.g. -r-7d exports 7 previous days, today excluded (-r-0d means today);\n';
 
   const DateRangeArgParser();
 
@@ -21,9 +21,9 @@ class DateRangeArgParser {
       // -{days}d
       if (input.endsWith('d')) {
         final days = int.tryParse(input.substring(1, input.length - 1));
-        if (days != null && days > 0) {
-          end = DateTime.now();
-          start = DateTime(end.year, end.month, end.day - days + 1);
+        if (days != null && days >= 0) {
+          end = days > 0 ? DateUtils.startOfToday() : DateTime.now();
+          start = DateTime(end.year, end.month, end.day - days);
         }
       }
     } else {
