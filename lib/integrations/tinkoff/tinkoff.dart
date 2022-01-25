@@ -12,6 +12,8 @@ import 'package:tinkoff_invest/tinkoff_invest.dart';
 class Tinkoff {
   late final TinkoffInvestApi _api;
 
+  final _instrumentsCache = <String, SearchMarketInstrument>{};
+
   Tinkoff({
     required String token,
     bool debug = false,
@@ -126,10 +128,8 @@ class Tinkoff {
             break;
         }
 
-        // TODO: cache
-        final instrument = item.figi != null
-            ? (await marketApi.searchByFigi(item.figi!).require()).payload
-            : null;
+        final instrument =
+            item.figi != null ? await _searchInstrument(item.figi!) : null;
 
         list.add(OperationsExportDataItem(
           date: item.date,
@@ -245,6 +245,14 @@ class Tinkoff {
         items: items,
       ));
     });
+  }
+
+  Future<SearchMarketInstrument> _searchInstrument(String figi) async {
+    if (_instrumentsCache.containsKey(figi)) return _instrumentsCache[figi]!;
+
+    final res = (await _api.market.searchByFigi(figi).require()).payload;
+    _instrumentsCache[figi] = res;
+    return res;
   }
 
   String _getAccoountTitle(UserAccount account) =>
