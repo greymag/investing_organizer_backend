@@ -129,6 +129,7 @@ extension IBInstumentTypeExtension on ib.InstrumentType {
   tinkoff.InstrumentType forData() {
     switch (this) {
       case ib.InstrumentType.common:
+      case ib.InstrumentType.adr:
         return tinkoff.InstrumentType.stock;
       case ib.InstrumentType.etf:
         return tinkoff.InstrumentType.etf;

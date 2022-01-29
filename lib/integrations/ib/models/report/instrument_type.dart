@@ -1,4 +1,4 @@
-enum InstrumentType { common, etf, reit }
+enum InstrumentType { common, etf, reit, adr }
 
 // TODO: add other
 
@@ -13,6 +13,7 @@ class InstrumentTypeConverter {
     'COMMON': InstrumentType.common,
     'ETF': InstrumentType.etf,
     'REIT': InstrumentType.reit,
+    'ADR': InstrumentType.adr,
   };
 
   const InstrumentTypeConverter();
