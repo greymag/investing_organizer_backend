@@ -70,7 +70,6 @@ class Tinkoff {
               .load(from, to, brokerAccountId: account.brokerAccountId)
               .require())
           .payload;
-      final marketApi = _api.market;
 
       final items = operations.operations.toList();
       items.sort((a, b) => a.date.compareTo(b.date));
