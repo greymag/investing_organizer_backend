@@ -165,7 +165,7 @@ class Tinkoff {
 
     // TODO: accept date as an arg
     final now = DateTime.now();
-    final day = _getWorkingDayNotEarlierThan(now);
+    var candlesRange = _getWorkingDayNotEarlierThan(now);
 
     final itemsByCurrency = <Currency, List<PortfolioExportDataItem>>{};
 
@@ -190,23 +190,29 @@ class Tinkoff {
                   .require())
               .payload;
 
-          return candles.candles.first.c;
-        } catch (e) {
-          // shift day only 1 time
-          if (attempt < 1) {
-            return loadPrice(
-              _getWorkingDayNotEarlierThan(DateUtils.previousDay(range.start)),
-              attempt: attempt + 1,
-            );
+          if (candles.candles.isEmpty) {
+            if (attempt < 5) {
+              return loadPrice(
+                DateRange(DateUtils.previousDay(range.start), range.end),
+                attempt: attempt + 1,
+              );
+            }
+
+            throw Exception(
+                "Can't load price for ${position.ticker} [${position.figi}]: "
+                'no candles data in range $candlesRange');
           }
 
+          candlesRange = range;
+          return candles.candles.last.c;
+        } catch (e) {
           throw Exception(
               "Can't load price for ${position.ticker} [${position.figi}]: $e");
         }
       }
 
       final currency = position.averagePositionPrice!.currency;
-      final price = await loadPrice(day);
+      final price = await loadPrice(candlesRange);
       final amount = price * position.balance;
 
       final item = PortfolioExportDataItem(
