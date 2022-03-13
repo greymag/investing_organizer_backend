@@ -26,13 +26,13 @@ class Tinkoff {
     );
   }
 
-  Future<PortfolioExportData> exportPorfolio() async {
+  Future<PortfolioExportData> exportPortfolio() async {
     final userApi = _api.user;
     final accounts = (await userApi.accounts().require()).payload;
 
     final data4Export = <PortfolioExportDataSet>[];
     for (final account in accounts.accounts) {
-      final accountTitle = _getAccoountTitle(account);
+      final accountTitle = _getAccountTitle(account);
       await _loadData(data4Export, account.brokerAccountId, accountTitle);
     }
 
@@ -40,7 +40,7 @@ class Tinkoff {
   }
 
   Future<File> exportPortfolioToExcel(String path) async {
-    return const ExcelPortfolioExporter().export(path, await exportPorfolio());
+    return const ExcelPortfolioExporter().export(path, await exportPortfolio());
   }
 
   Future<OperationsExportData> exportOperations(DateRange range) async {
@@ -53,7 +53,7 @@ class Tinkoff {
     final data4Export = <OperationsExportDataSet>[];
     for (final account in accounts.accounts) {
       final dataSet = OperationsExportDataSet(
-        account: _getAccoountTitle(account),
+        account: _getAccountTitle(account),
         taxes: [],
         comissions: [],
         coupons: [],
@@ -260,7 +260,7 @@ class Tinkoff {
     return res;
   }
 
-  String _getAccoountTitle(UserAccount account) =>
+  String _getAccountTitle(UserAccount account) =>
       '${account.brokerAccountId}-${account.brokerAccountType.name}';
 
   DateRange _getWorkingDayNotEarlierThan(DateTime date) {

@@ -26,7 +26,7 @@ class ExportSummaryCommand extends WarrenCommand {
         valueHelp: 'TYPE',
         allowed: _ExportType.values.map((e) => e.name),
         allowedHelp: {
-          _ExportType.portfolio.name: 'Export porfolio.',
+          _ExportType.portfolio.name: 'Export portfolio.',
           // _ExportType.operations.name:
           // 'Export operations in specified dates range.',
         },

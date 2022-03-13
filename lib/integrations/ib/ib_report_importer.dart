@@ -2,9 +2,6 @@ import 'package:csv/csv.dart';
 import 'package:investing_organizer/integrations/ib/ib.dart';
 import 'package:string_ext/string_ext.dart';
 
-import 'models/report/report.dart';
-import 'models/report/withholding_tax.dart';
-
 class IBReportImporter {
   final String csv;
 

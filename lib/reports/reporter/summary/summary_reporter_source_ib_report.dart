@@ -125,7 +125,7 @@ class SummaryReporterSourceIBReport implements SummaryReporterSource {
   String _getAccountName(ib.Report report) => report.accountInformation.account;
 }
 
-extension IBInstumentTypeExtension on ib.InstrumentType {
+extension IBInstrumentTypeExtension on ib.InstrumentType {
   tinkoff.InstrumentType forData() {
     switch (this) {
       case ib.InstrumentType.common:

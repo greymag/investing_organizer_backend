@@ -20,7 +20,7 @@ class MultiTinkoff {
 
   Future<PortfolioExportData> loadPortfolio() async {
     return PortfolioExportData.byAsync(
-        instances.map((tinkoff) => tinkoff.exportPorfolio()));
+        instances.map((tinkoff) => tinkoff.exportPortfolio()));
   }
 
   Future<OperationsExportData> loadOperations(DateRange range) async {
